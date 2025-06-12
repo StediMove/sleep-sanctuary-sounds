@@ -11,6 +11,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Play, Heart, Clock, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  realAudioContent, 
+  realCategories, 
+  getTrackCountByCategory, 
+  getTotalTrackCount,
+  getFreeTrackCount,
+  getTotalDurationMinutes
+} from '@/utils/audioContent';
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -19,33 +27,14 @@ const HomePage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  // Fetch categories
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+  // Use real categories data
+  const categories = realCategories;
 
-  // Fetch featured content (free + some premium)
-  const { data: featuredTracks = [] } = useQuery({
-    queryKey: ['featuredTracks'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('audio_content')
-        .select('*, categories(name)')
-        .limit(6);
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+  // Use real featured tracks (first 6 tracks from our real content)
+  const featuredTracks = realAudioContent.slice(0, 6).map(track => ({
+    ...track,
+    categories: { name: categories.find(cat => cat.id === track.category)?.name || 'Unknown' }
+  }));
 
   // Fetch user favorites if logged in
   useEffect(() => {
@@ -165,7 +154,7 @@ const HomePage = () => {
             <CategoryCard
               key={category.id}
               category={category}
-              trackCount={Math.floor(Math.random() * 20) + 5} // Placeholder
+              trackCount={getTrackCountByCategory(category.id)}
               onClick={() => {
                 if (!user) {
                   toast({
@@ -201,30 +190,30 @@ const HomePage = () => {
         </section>
       )}
 
-      {/* Stats Section */}
+      {/* Real Stats Section */}
       <section className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
             <CardContent className="p-6">
               <Star className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-white">1000+</h3>
-              <p className="text-white/70">Premium Tracks</p>
+              <h3 className="text-2xl font-bold text-white">{getTotalTrackCount()}</h3>
+              <p className="text-white/70">Audio Tracks</p>
             </CardContent>
           </Card>
           
           <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
             <CardContent className="p-6">
               <Heart className="h-8 w-8 text-red-400 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-white">50K+</h3>
-              <p className="text-white/70">Happy Users</p>
+              <h3 className="text-2xl font-bold text-white">{getFreeTrackCount()}</h3>
+              <p className="text-white/70">Free Tracks</p>
             </CardContent>
           </Card>
           
           <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
             <CardContent className="p-6">
               <Clock className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-white">100+</h3>
-              <p className="text-white/70">Hours of Content</p>
+              <h3 className="text-2xl font-bold text-white">{getTotalDurationMinutes()}</h3>
+              <p className="text-white/70">Minutes of Content</p>
             </CardContent>
           </Card>
         </div>
