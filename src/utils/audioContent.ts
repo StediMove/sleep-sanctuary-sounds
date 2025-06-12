@@ -8,7 +8,7 @@ export const realAudioContent = [
     description: 'A gentle bedtime story about a sleepy bear finding his way to dreamland.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/Benny the Sleepy Bear (short).mp3',
-    duration: 300, // Approximate duration in seconds
+    duration: 300, // 5 minutes
     is_premium: false,
     tags: ['bedtime', 'stories', 'children', 'bear']
   },
@@ -18,7 +18,7 @@ export const realAudioContent = [
     description: 'An enchanting adventure story about Captain Nilo and his magical journey.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/Captain Nilo and the Starwhale.mp3',
-    duration: 600,
+    duration: 600, // 10 minutes
     is_premium: true,
     tags: ['adventure', 'fantasy', 'ocean', 'stars']
   },
@@ -28,7 +28,7 @@ export const realAudioContent = [
     description: 'A mystical tale about a special forest waiting for someone special.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/The Forest That Waits for One.mp3',
-    duration: 480,
+    duration: 480, // 8 minutes
     is_premium: true,
     tags: ['forest', 'nature', 'mystery', 'magic']
   },
@@ -39,7 +39,7 @@ export const realAudioContent = [
     description: 'Cozy crackling fireplace sounds to warm your heart and calm your mind.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Fireplace sounds.mp3',
-    duration: 1800,
+    duration: 1800, // 30 minutes
     is_premium: false,
     tags: ['fireplace', 'cozy', 'warm', 'crackling']
   },
@@ -49,7 +49,7 @@ export const realAudioContent = [
     description: 'Natural forest ambience with birds chirping and leaves rustling.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Forest sounds.mp3',
-    duration: 1200,
+    duration: 1200, // 20 minutes
     is_premium: false,
     tags: ['nature', 'birds', 'forest', 'peaceful']
   },
@@ -59,7 +59,7 @@ export const realAudioContent = [
     description: 'Soft rainfall sounds perfect for relaxation and sleep.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Gentle rain.mp3',
-    duration: 1500,
+    duration: 1500, // 25 minutes
     is_premium: false,
     tags: ['rain', 'weather', 'peaceful', 'sleep']
   },
@@ -69,7 +69,7 @@ export const realAudioContent = [
     description: 'Peaceful nighttime ambience from a quiet village.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Night sounds at a village.mp3',
-    duration: 1800,
+    duration: 1800, // 30 minutes
     is_premium: true,
     tags: ['night', 'village', 'peaceful', 'ambient']
   },
@@ -79,7 +79,7 @@ export const realAudioContent = [
     description: 'Relaxing ocean waves for deep relaxation and meditation.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Ocean sounds.mp3',
-    duration: 2000,
+    duration: 2000, // 33 minutes
     is_premium: false,
     tags: ['ocean', 'waves', 'water', 'meditation']
   },
@@ -89,7 +89,7 @@ export const realAudioContent = [
     description: 'Gentle flowing water sounds for tranquility and peace.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Running water.mp3',
-    duration: 1200,
+    duration: 1200, // 20 minutes
     is_premium: false,
     tags: ['water', 'stream', 'flowing', 'nature']
   },
@@ -99,7 +99,7 @@ export const realAudioContent = [
     description: 'Rhythmic sea waves for relaxation and stress relief.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Sea waves.mp3',
-    duration: 1800,
+    duration: 1800, // 30 minutes
     is_premium: true,
     tags: ['sea', 'waves', 'ocean', 'rhythmic']
   },
@@ -109,7 +109,7 @@ export const realAudioContent = [
     description: 'Powerful yet soothing waterfall sounds for deep relaxation.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Waterfall sounds.mp3',
-    duration: 1600,
+    duration: 1600, // 27 minutes
     is_premium: true,
     tags: ['waterfall', 'nature', 'powerful', 'flowing']
   },
@@ -119,7 +119,7 @@ export const realAudioContent = [
     description: 'Natural waterfall ambience for meditation and calm.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Waterfall.mp3',
-    duration: 1400,
+    duration: 1400, // 23 minutes
     is_premium: false,
     tags: ['waterfall', 'nature', 'meditation', 'calm']
   },
@@ -130,7 +130,7 @@ export const realAudioContent = [
     description: 'Crystal-clear meditation music for spiritual awakening and inner peace.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music crystal.mp3',
-    duration: 900,
+    duration: 900, // 15 minutes
     is_premium: true,
     tags: ['meditation', 'crystal', 'spiritual', 'peace']
   },
@@ -140,7 +140,7 @@ export const realAudioContent = [
     description: 'Peaceful meditation music designed for immediate relaxation.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music rest now.mp3',
-    duration: 1200,
+    duration: 1200, // 20 minutes
     is_premium: false,
     tags: ['meditation', 'rest', 'relaxation', 'immediate']
   },
@@ -150,7 +150,7 @@ export const realAudioContent = [
     description: 'Warm meditation music inspired by beautiful sunsets.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music sunset.mp3',
-    duration: 1000,
+    duration: 1000, // 17 minutes
     is_premium: true,
     tags: ['meditation', 'sunset', 'warm', 'beautiful']
   },
@@ -160,7 +160,7 @@ export const realAudioContent = [
     description: 'Specially composed music to help you drift into peaceful sleep.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Relaxing Sleep Music.mp3',
-    duration: 1800,
+    duration: 1800, // 30 minutes
     is_premium: false,
     tags: ['sleep', 'relaxing', 'peaceful', 'composed']
   }
@@ -213,4 +213,16 @@ export const getFreeTrackCount = (): number => {
 export const getTotalDurationMinutes = (): number => {
   const totalSeconds = realAudioContent.reduce((total, track) => total + track.duration, 0);
   return Math.round(totalSeconds / 60);
+};
+
+export const getTracksByCategory = (categoryId: string) => {
+  return realAudioContent.filter(track => track.category === categoryId);
+};
+
+export const getSampleTracks = () => {
+  return [
+    realAudioContent.find(track => track.id === 'benny-sleepy-bear'), // Free bedtime story
+    realAudioContent.find(track => track.id === 'fireplace-sounds'), // Free calming sound
+    realAudioContent.find(track => track.id === 'meditation-rest-now') // Free meditation music
+  ].filter(Boolean);
 };

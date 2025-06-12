@@ -2,14 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
 import CategoryCard from '@/components/content/CategoryCard';
 import TrackCard from '@/components/content/TrackCard';
 import AudioPlayer from '@/components/audio/AudioPlayer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, Heart, Clock, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Heart, Clock, Star } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { 
   realAudioContent, 
@@ -17,24 +16,34 @@ import {
   getTrackCountByCategory, 
   getTotalTrackCount,
   getFreeTrackCount,
-  getTotalDurationMinutes
+  getTotalDurationMinutes,
+  getSampleTracks
 } from '@/utils/audioContent';
 
 const HomePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   // Use real categories data
   const categories = realCategories;
 
-  // Use real featured tracks (first 6 tracks from our real content)
-  const featuredTracks = realAudioContent.slice(0, 6).map(track => ({
+  // Get sample tracks for non-users, featured tracks for users
+  const sampleTracks = getSampleTracks().map(track => ({
     ...track,
-    categories: { name: categories.find(cat => cat.id === track.category)?.name || 'Unknown' }
+    categories: { name: categories.find(cat => cat.id === track?.category)?.name || 'Unknown' }
   }));
+  
+  const featuredTracks = user 
+    ? realAudioContent.slice(0, 6).map(track => ({
+        ...track,
+        categories: { name: categories.find(cat => cat.id === track.category)?.name || 'Unknown' }
+      }))
+    : sampleTracks;
 
   // Fetch user favorites if logged in
   useEffect(() => {
@@ -54,10 +63,31 @@ const HomePage = () => {
   }, [user]);
 
   const handlePlayTrack = (track: any) => {
+    const trackIndex = featuredTracks.findIndex(t => t.id === track.id);
+    setCurrentTrackIndex(trackIndex);
+    
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
       setCurrentTrack(track);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentTrackIndex < featuredTracks.length - 1) {
+      const nextIndex = currentTrackIndex + 1;
+      setCurrentTrackIndex(nextIndex);
+      setCurrentTrack(featuredTracks[nextIndex]);
+      setIsPlaying(true);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentTrackIndex > 0) {
+      const prevIndex = currentTrackIndex - 1;
+      setCurrentTrackIndex(prevIndex);
+      setCurrentTrack(featuredTracks[prevIndex]);
       setIsPlaying(true);
     }
   };
@@ -100,6 +130,18 @@ const HomePage = () => {
     }
   };
 
+  const handleCategoryClick = (categoryId: string) => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Create an account to access all content.",
+        variant: "destructive"
+      });
+    } else {
+      navigate(`/category/${categoryId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Hero Section */}
@@ -126,24 +168,6 @@ const HomePage = () => {
             </div>
           )}
         </div>
-
-        {/* Preview Player for Non-Users */}
-        {!user && featuredTracks.length > 0 && (
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 mb-8 max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-white text-center">Free Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TrackCard
-                track={featuredTracks[0]}
-                isPlaying={currentTrack?.id === featuredTracks[0].id && isPlaying}
-                isFavorite={false}
-                onPlay={() => handlePlayTrack(featuredTracks[0])}
-                onFavorite={() => handleFavorite(featuredTracks[0].id)}
-              />
-            </CardContent>
-          </Card>
-        )}
       </section>
 
       {/* Categories */}
@@ -155,40 +179,35 @@ const HomePage = () => {
               key={category.id}
               category={category}
               trackCount={getTrackCountByCategory(category.id)}
-              onClick={() => {
-                if (!user) {
-                  toast({
-                    title: "Sign in required",
-                    description: "Create an account to access all content.",
-                    variant: "destructive"
-                  });
-                } else {
-                  // Navigate to category page
-                }
-              }}
+              onClick={() => handleCategoryClick(category.id)}
             />
           ))}
         </div>
       </section>
 
-      {/* Featured Content */}
-      {user && (
-        <section className="container mx-auto px-4 py-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Featured Content</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {featuredTracks.map((track) => (
-              <TrackCard
-                key={track.id}
-                track={track}
-                isPlaying={currentTrack?.id === track.id && isPlaying}
-                isFavorite={favorites.includes(track.id)}
-                onPlay={() => handlePlayTrack(track)}
-                onFavorite={() => handleFavorite(track.id)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Sample/Featured Content */}
+      <section className="container mx-auto px-4 py-8">
+        <h2 className="text-2xl font-bold text-white mb-6">
+          {user ? 'Featured Content' : 'Sample Tracks'}
+        </h2>
+        {!user && (
+          <p className="text-white/70 mb-6">
+            Try these sample tracks from each category. Sign up for full access to our complete library.
+          </p>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {featuredTracks.map((track) => (
+            <TrackCard
+              key={track.id}
+              track={track}
+              isPlaying={currentTrack?.id === track.id && isPlaying}
+              isFavorite={favorites.includes(track.id)}
+              onPlay={() => handlePlayTrack(track)}
+              onFavorite={() => handleFavorite(track.id)}
+            />
+          ))}
+        </div>
+      </section>
 
       {/* Real Stats Section */}
       <section className="container mx-auto px-4 py-8">
@@ -224,6 +243,8 @@ const HomePage = () => {
         currentTrack={currentTrack}
         isPlaying={isPlaying}
         onPlayPause={() => setIsPlaying(!isPlaying)}
+        onNext={featuredTracks.length > 1 ? handleNext : undefined}
+        onPrevious={featuredTracks.length > 1 ? handlePrevious : undefined}
         isFavorite={currentTrack ? favorites.includes(currentTrack.id) : false}
         onFavorite={() => currentTrack && handleFavorite(currentTrack.id)}
       />
