@@ -1,0 +1,248 @@
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import CategoryCard from '@/components/content/CategoryCard';
+import TrackCard from '@/components/content/TrackCard';
+import AudioPlayer from '@/components/audio/AudioPlayer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Play, Heart, Clock, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+
+const HomePage = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [currentTrack, setCurrentTrack] = useState<any>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Fetch categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch featured content (free + some premium)
+  const { data: featuredTracks = [] } = useQuery({
+    queryKey: ['featuredTracks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audio_content')
+        .select('*, categories(name)')
+        .limit(6);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch user favorites if logged in
+  useEffect(() => {
+    if (user) {
+      const fetchFavorites = async () => {
+        const { data } = await supabase
+          .from('user_favorites')
+          .select('content_id')
+          .eq('user_id', user.id);
+        
+        if (data) {
+          setFavorites(data.map(fav => fav.content_id));
+        }
+      };
+      fetchFavorites();
+    }
+  }, [user]);
+
+  const handlePlayTrack = (track: any) => {
+    if (currentTrack?.id === track.id) {
+      setIsPlaying(!isPlaying);
+    } else {
+      setCurrentTrack(track);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleFavorite = async (trackId: string) => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add favorites.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const isFavorite = favorites.includes(trackId);
+    
+    if (isFavorite) {
+      const { error } = await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('content_id', trackId);
+      
+      if (!error) {
+        setFavorites(favorites.filter(id => id !== trackId));
+        toast({ title: "Removed from favorites" });
+      }
+    } else {
+      const { error } = await supabase
+        .from('user_favorites')
+        .insert({
+          user_id: user.id,
+          content_id: trackId
+        });
+      
+      if (!error) {
+        setFavorites([...favorites, trackId]);
+        toast({ title: "Added to favorites" });
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+            Sleep Sanctuary
+          </h1>
+          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            Discover peaceful bedtime stories, calming sounds, and meditation music 
+            designed to help you drift into restful sleep.
+          </p>
+          
+          {!user && (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link to="/auth">
+                <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
+                  Start Your Journey
+                </Button>
+              </Link>
+              <p className="text-white/60 text-sm">
+                Free preview • Full access with account
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Preview Player for Non-Users */}
+        {!user && featuredTracks.length > 0 && (
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 mb-8 max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-white text-center">Free Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TrackCard
+                track={featuredTracks[0]}
+                isPlaying={currentTrack?.id === featuredTracks[0].id && isPlaying}
+                isFavorite={false}
+                onPlay={() => handlePlayTrack(featuredTracks[0])}
+                onFavorite={() => handleFavorite(featuredTracks[0].id)}
+              />
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      {/* Categories */}
+      <section className="container mx-auto px-4 py-8">
+        <h2 className="text-2xl font-bold text-white mb-6">Explore Categories</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              trackCount={Math.floor(Math.random() * 20) + 5} // Placeholder
+              onClick={() => {
+                if (!user) {
+                  toast({
+                    title: "Sign in required",
+                    description: "Create an account to access all content.",
+                    variant: "destructive"
+                  });
+                } else {
+                  // Navigate to category page
+                }
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Featured Content */}
+      {user && (
+        <section className="container mx-auto px-4 py-8">
+          <h2 className="text-2xl font-bold text-white mb-6">Featured Content</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {featuredTracks.map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                isPlaying={currentTrack?.id === track.id && isPlaying}
+                isFavorite={favorites.includes(track.id)}
+                onPlay={() => handlePlayTrack(track)}
+                onFavorite={() => handleFavorite(track.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Stats Section */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
+            <CardContent className="p-6">
+              <Star className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+              <h3 className="text-2xl font-bold text-white">1000+</h3>
+              <p className="text-white/70">Premium Tracks</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
+            <CardContent className="p-6">
+              <Heart className="h-8 w-8 text-red-400 mx-auto mb-2" />
+              <h3 className="text-2xl font-bold text-white">50K+</h3>
+              <p className="text-white/70">Happy Users</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
+            <CardContent className="p-6">
+              <Clock className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+              <h3 className="text-2xl font-bold text-white">100+</h3>
+              <p className="text-white/70">Hours of Content</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Audio Player */}
+      <AudioPlayer
+        currentTrack={currentTrack}
+        isPlaying={isPlaying}
+        onPlayPause={() => setIsPlaying(!isPlaying)}
+        isFavorite={currentTrack ? favorites.includes(currentTrack.id) : false}
+        onFavorite={() => currentTrack && handleFavorite(currentTrack.id)}
+      />
+      
+      {/* Bottom spacing for fixed player */}
+      <div className="h-24"></div>
+    </div>
+  );
+};
+
+export default HomePage;
