@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, Clock, Sparkles } from 'lucide-react';
+import { Play, Pause, Sparkles } from 'lucide-react';
 
 interface TrackCardProps {
   track: {
@@ -16,16 +16,10 @@ interface TrackCardProps {
   };
   isPlaying?: boolean;
   onPlay: () => void;
+  onFavorite?: () => void;
 }
 
 const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
-  const formatDuration = (seconds?: number) => {
-    if (!seconds) return '';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   return (
     <Card className={`glass-card glass-card-hover group relative overflow-hidden ${track.is_premium ? 'premium-glow' : ''}`}>
       {/* Premium sparkle effect */}
@@ -95,13 +89,6 @@ const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
                   {isPlaying ? 'Playing' : 'Play'}
                 </Button>
               </div>
-              
-              {track.duration && (
-                <div className="flex items-center text-white/60 text-sm font-light">
-                  <Clock className="h-3 w-3 mr-1.5" />
-                  {formatDuration(track.duration)}
-                </div>
-              )}
             </div>
           </div>
         </div>

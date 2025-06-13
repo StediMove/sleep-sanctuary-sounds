@@ -32,13 +32,13 @@ const CategoryCard = ({ category, trackCount, onClick }: CategoryCardProps) => {
 
   return (
     <Card 
-      className="glass-card glass-card-hover cursor-pointer group relative overflow-hidden"
+      className="glass-card glass-card-hover cursor-pointer group relative overflow-hidden h-64"
       onClick={onClick}
     >
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      <CardContent className="p-8 relative z-10">
+      <CardContent className="p-8 relative z-10 h-full flex flex-col">
         <div className="flex items-start justify-between mb-6">
           <div 
             className="p-4 rounded-2xl group-hover:scale-110 transition-all duration-300 shadow-lg"
@@ -58,12 +58,16 @@ const CategoryCard = ({ category, trackCount, onClick }: CategoryCardProps) => {
           </Badge>
         </div>
         
-        <h3 className="font-serif text-2xl font-normal text-white mb-3 group-hover:text-white/90 transition-colors duration-300">
-          {category.name}
-        </h3>
-        <p className="text-white/80 text-sm leading-relaxed font-light group-hover:text-white/70 transition-colors duration-300">
-          {category.description}
-        </p>
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <h3 className="font-serif text-2xl font-normal text-white mb-3 group-hover:text-white/90 transition-colors duration-300">
+              {category.name}
+            </h3>
+            <p className="text-white/80 text-sm leading-relaxed font-light group-hover:text-white/70 transition-colors duration-300">
+              {category.description}
+            </p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
