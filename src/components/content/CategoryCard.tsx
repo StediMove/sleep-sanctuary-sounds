@@ -52,7 +52,7 @@ const CategoryCard = ({ category, trackCount, onClick }: CategoryCardProps) => {
           </div>
           <Badge 
             variant="secondary" 
-            className="glass-card text-white/90 font-medium px-3 py-1 group-hover:bg-white/20 transition-colors duration-300"
+            className="bg-white/10 border-white/20 text-white/90 font-medium px-3 py-1 group-hover:bg-white/20 transition-colors duration-300"
           >
             {trackCount} tracks
           </Badge>
