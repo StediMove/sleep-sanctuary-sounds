@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Heart } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
 
 interface AudioPlayerProps {
   currentTrack: any;
@@ -11,8 +11,6 @@ interface AudioPlayerProps {
   onPlayPause: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
-  isFavorite?: boolean;
-  onFavorite?: () => void;
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({
@@ -20,9 +18,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   isPlaying,
   onPlayPause,
   onNext,
-  onPrevious,
-  isFavorite = false,
-  onFavorite
+  onPrevious
 }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -36,28 +32,39 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleDurationChange = () => setDuration(audio.duration);
     const handleLoadedMetadata = () => setDuration(audio.duration);
+    const handleEnded = () => {
+      // Auto-advance to next track when current track ends
+      if (onNext) {
+        onNext();
+      }
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack]);
+  }, [currentTrack, onNext]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isPlaying) {
-      audio.play().catch(console.error);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(console.error);
+      }
     } else {
       audio.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying, currentTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -103,17 +110,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
             </div>
             
             <div className="flex items-center space-x-2">
-              {onFavorite && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onFavorite}
-                  className="text-white hover:bg-white/10"
-                >
-                  <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                </Button>
-              )}
-              
               {onPrevious && (
                 <Button
                   variant="ghost"

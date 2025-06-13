@@ -2,12 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import TrackCard from '@/components/content/TrackCard';
 import AudioPlayer from '@/components/audio/AudioPlayer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { 
   realCategories, 
   getTracksByCategory 
@@ -17,10 +15,8 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   const category = realCategories.find(cat => cat.id === categoryId);
@@ -28,23 +24,6 @@ const CategoryPage = () => {
     ...track,
     categories: { name: category?.name || 'Unknown' }
   }));
-
-  // Fetch user favorites if logged in
-  useEffect(() => {
-    if (user) {
-      const fetchFavorites = async () => {
-        const { data } = await supabase
-          .from('user_favorites')
-          .select('content_id')
-          .eq('user_id', user.id);
-        
-        if (data) {
-          setFavorites(data.map(fav => fav.content_id));
-        }
-      };
-      fetchFavorites();
-    }
-  }, [user]);
 
   const handlePlayTrack = (track: any) => {
     const trackIndex = tracks.findIndex(t => t.id === track.id);
@@ -73,44 +52,6 @@ const CategoryPage = () => {
       setCurrentTrackIndex(prevIndex);
       setCurrentTrack(tracks[prevIndex]);
       setIsPlaying(true);
-    }
-  };
-
-  const handleFavorite = async (trackId: string) => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to add favorites.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const isFavorite = favorites.includes(trackId);
-    
-    if (isFavorite) {
-      const { error } = await supabase
-        .from('user_favorites')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('content_id', trackId);
-      
-      if (!error) {
-        setFavorites(favorites.filter(id => id !== trackId));
-        toast({ title: "Removed from favorites" });
-      }
-    } else {
-      const { error } = await supabase
-        .from('user_favorites')
-        .insert({
-          user_id: user.id,
-          content_id: trackId
-        });
-      
-      if (!error) {
-        setFavorites([...favorites, trackId]);
-        toast({ title: "Added to favorites" });
-      }
     }
   };
 
@@ -151,9 +92,7 @@ const CategoryPage = () => {
               key={track.id}
               track={track}
               isPlaying={currentTrack?.id === track.id && isPlaying}
-              isFavorite={favorites.includes(track.id)}
               onPlay={() => handlePlayTrack(track)}
-              onFavorite={() => handleFavorite(track.id)}
             />
           ))}
         </div>
@@ -172,8 +111,6 @@ const CategoryPage = () => {
         onPlayPause={() => setIsPlaying(!isPlaying)}
         onNext={tracks.length > 1 ? handleNext : undefined}
         onPrevious={tracks.length > 1 ? handlePrevious : undefined}
-        isFavorite={currentTrack ? favorites.includes(currentTrack.id) : false}
-        onFavorite={() => currentTrack && handleFavorite(currentTrack.id)}
       />
       
       {/* Bottom spacing for fixed player */}

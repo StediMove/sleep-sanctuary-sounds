@@ -11,7 +11,6 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "./components/auth/AuthPage";
 import HomePage from "./pages/HomePage";
 import CategoryPage from "./pages/CategoryPage";
-import ProfilePage from "./pages/ProfilePage";
 import Header from "./components/layout/Header";
 
 const queryClient = new QueryClient();
@@ -30,7 +29,6 @@ const App = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/category/:categoryId" element={<CategoryPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>

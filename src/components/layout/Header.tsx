@@ -1,8 +1,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, User, Moon } from 'lucide-react';
+import { LogOut, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
@@ -18,13 +17,7 @@ const Header = () => {
         
         {user ? (
           <div className="flex items-center space-x-3">
-            <Link to="/profile">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-purple-600 text-white">
-                  <User className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+            <span className="text-white/70 text-sm">Welcome back!</span>
             <Button
               variant="ghost"
               size="sm"

@@ -1,13 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import CategoryCard from '@/components/content/CategoryCard';
 import TrackCard from '@/components/content/TrackCard';
 import AudioPlayer from '@/components/audio/AudioPlayer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Clock, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Clock, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -26,7 +25,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   // Use real categories data
@@ -44,23 +42,6 @@ const HomePage = () => {
         categories: { name: categories.find(cat => cat.id === track.category)?.name || 'Unknown' }
       }))
     : sampleTracks;
-
-  // Fetch user favorites if logged in
-  useEffect(() => {
-    if (user) {
-      const fetchFavorites = async () => {
-        const { data } = await supabase
-          .from('user_favorites')
-          .select('content_id')
-          .eq('user_id', user.id);
-        
-        if (data) {
-          setFavorites(data.map(fav => fav.content_id));
-        }
-      };
-      fetchFavorites();
-    }
-  }, [user]);
 
   const handlePlayTrack = (track: any) => {
     const trackIndex = featuredTracks.findIndex(t => t.id === track.id);
@@ -89,44 +70,6 @@ const HomePage = () => {
       setCurrentTrackIndex(prevIndex);
       setCurrentTrack(featuredTracks[prevIndex]);
       setIsPlaying(true);
-    }
-  };
-
-  const handleFavorite = async (trackId: string) => {
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to add favorites.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const isFavorite = favorites.includes(trackId);
-    
-    if (isFavorite) {
-      const { error } = await supabase
-        .from('user_favorites')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('content_id', trackId);
-      
-      if (!error) {
-        setFavorites(favorites.filter(id => id !== trackId));
-        toast({ title: "Removed from favorites" });
-      }
-    } else {
-      const { error } = await supabase
-        .from('user_favorites')
-        .insert({
-          user_id: user.id,
-          content_id: trackId
-        });
-      
-      if (!error) {
-        setFavorites([...favorites, trackId]);
-        toast({ title: "Added to favorites" });
-      }
     }
   };
 
@@ -201,9 +144,7 @@ const HomePage = () => {
               key={track.id}
               track={track}
               isPlaying={currentTrack?.id === track.id && isPlaying}
-              isFavorite={favorites.includes(track.id)}
               onPlay={() => handlePlayTrack(track)}
-              onFavorite={() => handleFavorite(track.id)}
             />
           ))}
         </div>
@@ -222,7 +163,7 @@ const HomePage = () => {
           
           <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
             <CardContent className="p-6">
-              <Heart className="h-8 w-8 text-red-400 mx-auto mb-2" />
+              <Star className="h-8 w-8 text-green-400 mx-auto mb-2" />
               <h3 className="text-2xl font-bold text-white">{getFreeTrackCount()}</h3>
               <p className="text-white/70">Free Tracks</p>
             </CardContent>
@@ -245,8 +186,6 @@ const HomePage = () => {
         onPlayPause={() => setIsPlaying(!isPlaying)}
         onNext={featuredTracks.length > 1 ? handleNext : undefined}
         onPrevious={featuredTracks.length > 1 ? handlePrevious : undefined}
-        isFavorite={currentTrack ? favorites.includes(currentTrack.id) : false}
-        onFavorite={() => currentTrack && handleFavorite(currentTrack.id)}
       />
       
       {/* Bottom spacing for fixed player */}
