@@ -4,11 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import TrackCard from '@/components/content/TrackCard';
 import AudioPlayer from '@/components/audio/AudioPlayer';
+import FilterTags from '@/components/content/FilterTags';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { 
   realCategories, 
-  getTracksByCategory 
+  getTracksByCategory,
+  getTagsByCategory,
+  filterTracksByTags
 } from '@/utils/audioContent';
 
 const CategoryPage = () => {
@@ -18,15 +21,19 @@ const CategoryPage = () => {
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const category = realCategories.find(cat => cat.id === categoryId);
-  const tracks = getTracksByCategory(categoryId || '').map(track => ({
+  const allTracks = getTracksByCategory(categoryId || '').map(track => ({
     ...track,
     categories: { name: category?.name || 'Unknown' }
   }));
+  
+  const availableTags = getTagsByCategory(categoryId || '');
+  const filteredTracks = filterTracksByTags(allTracks, selectedTags);
 
   const handlePlayTrack = (track: any) => {
-    const trackIndex = tracks.findIndex(t => t.id === track.id);
+    const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
     setCurrentTrackIndex(trackIndex);
     
     if (currentTrack?.id === track.id) {
@@ -38,10 +45,15 @@ const CategoryPage = () => {
   };
 
   const handleNext = () => {
-    if (currentTrackIndex < tracks.length - 1) {
+    if (currentTrackIndex < filteredTracks.length - 1) {
       const nextIndex = currentTrackIndex + 1;
       setCurrentTrackIndex(nextIndex);
-      setCurrentTrack(tracks[nextIndex]);
+      setCurrentTrack(filteredTracks[nextIndex]);
+      setIsPlaying(true);
+    } else if (filteredTracks.length > 0) {
+      // Loop back to first track
+      setCurrentTrackIndex(0);
+      setCurrentTrack(filteredTracks[0]);
       setIsPlaying(true);
     }
   };
@@ -50,10 +62,43 @@ const CategoryPage = () => {
     if (currentTrackIndex > 0) {
       const prevIndex = currentTrackIndex - 1;
       setCurrentTrackIndex(prevIndex);
-      setCurrentTrack(tracks[prevIndex]);
+      setCurrentTrack(filteredTracks[prevIndex]);
+      setIsPlaying(true);
+    } else if (filteredTracks.length > 0) {
+      // Loop to last track
+      const lastIndex = filteredTracks.length - 1;
+      setCurrentTrackIndex(lastIndex);
+      setCurrentTrack(filteredTracks[lastIndex]);
       setIsPlaying(true);
     }
   };
+
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const handleClearAllTags = () => {
+    setSelectedTags([]);
+  };
+
+  // Update current track index when tracks change due to filtering
+  useEffect(() => {
+    if (currentTrack && filteredTracks.length > 0) {
+      const newIndex = filteredTracks.findIndex(t => t.id === currentTrack.id);
+      if (newIndex !== -1) {
+        setCurrentTrackIndex(newIndex);
+      } else {
+        // Current track is filtered out, stop playing
+        setCurrentTrack(null);
+        setIsPlaying(false);
+        setCurrentTrackIndex(0);
+      }
+    }
+  }, [filteredTracks, currentTrack]);
 
   if (!category) {
     return (
@@ -85,9 +130,17 @@ const CategoryPage = () => {
           </div>
         </div>
 
+        {/* Filter Tags */}
+        <FilterTags
+          availableTags={availableTags}
+          selectedTags={selectedTags}
+          onTagToggle={handleTagToggle}
+          onClearAll={handleClearAllTags}
+        />
+
         {/* Tracks */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tracks.map((track) => (
+          {filteredTracks.map((track) => (
             <TrackCard
               key={track.id}
               track={track}
@@ -97,7 +150,13 @@ const CategoryPage = () => {
           ))}
         </div>
 
-        {tracks.length === 0 && (
+        {filteredTracks.length === 0 && selectedTags.length > 0 && (
+          <div className="text-center text-white/60 py-8">
+            No tracks found with the selected tags. Try adjusting your filters.
+          </div>
+        )}
+
+        {allTracks.length === 0 && (
           <div className="text-center text-white/60 py-8">
             No tracks available in this category.
           </div>
@@ -109,8 +168,8 @@ const CategoryPage = () => {
         currentTrack={currentTrack}
         isPlaying={isPlaying}
         onPlayPause={() => setIsPlaying(!isPlaying)}
-        onNext={tracks.length > 1 ? handleNext : undefined}
-        onPrevious={tracks.length > 1 ? handlePrevious : undefined}
+        onNext={filteredTracks.length > 1 ? handleNext : undefined}
+        onPrevious={filteredTracks.length > 1 ? handlePrevious : undefined}
       />
       
       {/* Bottom spacing for fixed player */}
