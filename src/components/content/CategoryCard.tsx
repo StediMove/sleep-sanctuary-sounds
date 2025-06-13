@@ -32,21 +32,38 @@ const CategoryCard = ({ category, trackCount, onClick }: CategoryCardProps) => {
 
   return (
     <Card 
-      className="cursor-pointer transition-all hover:scale-105 bg-white/20 backdrop-blur-sm border-white/30 hover:border-white/40"
+      className="glass-card glass-card-hover cursor-pointer group relative overflow-hidden"
       onClick={onClick}
     >
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div style={{ color: category.color }} className="drop-shadow-lg">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <CardContent className="p-8 relative z-10">
+        <div className="flex items-start justify-between mb-6">
+          <div 
+            className="p-4 rounded-2xl group-hover:scale-110 transition-all duration-300 shadow-lg"
+            style={{ 
+              backgroundColor: category.color + '20',
+              color: category.color,
+              boxShadow: `0 8px 32px ${category.color}20`
+            }}
+          >
             {getIcon()}
           </div>
-          <Badge variant="secondary" className="bg-white/30 text-white font-medium">
+          <Badge 
+            variant="secondary" 
+            className="glass-card text-white/90 font-medium px-3 py-1 group-hover:bg-white/20 transition-colors duration-300"
+          >
             {trackCount} tracks
           </Badge>
         </div>
         
-        <h3 className="text-xl font-semibold text-white mb-2 drop-shadow-lg">{category.name}</h3>
-        <p className="text-white/90 text-sm leading-relaxed drop-shadow-sm">{category.description}</p>
+        <h3 className="font-serif text-2xl font-normal text-white mb-3 group-hover:text-white/90 transition-colors duration-300">
+          {category.name}
+        </h3>
+        <p className="text-white/80 text-sm leading-relaxed font-light group-hover:text-white/70 transition-colors duration-300">
+          {category.description}
+        </p>
       </CardContent>
     </Card>
   );

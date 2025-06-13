@@ -6,7 +6,7 @@ import TrackCard from '@/components/content/TrackCard';
 import AudioPlayer from '@/components/audio/AudioPlayer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Star } from 'lucide-react';
+import { Clock, Star, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -61,6 +61,11 @@ const HomePage = () => {
       setCurrentTrackIndex(nextIndex);
       setCurrentTrack(featuredTracks[nextIndex]);
       setIsPlaying(true);
+    } else if (featuredTracks.length > 0) {
+      // Loop back to first track
+      setCurrentTrackIndex(0);
+      setCurrentTrack(featuredTracks[0]);
+      setIsPlaying(true);
     }
   };
 
@@ -69,6 +74,12 @@ const HomePage = () => {
       const prevIndex = currentTrackIndex - 1;
       setCurrentTrackIndex(prevIndex);
       setCurrentTrack(featuredTracks[prevIndex]);
+      setIsPlaying(true);
+    } else if (featuredTracks.length > 0) {
+      // Loop to last track
+      const lastIndex = featuredTracks.length - 1;
+      setCurrentTrackIndex(lastIndex);
+      setCurrentTrack(featuredTracks[lastIndex]);
       setIsPlaying(true);
     }
   };
@@ -86,26 +97,45 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-deep via-slate-900 to-navy-deep relative overflow-hidden">
+      {/* Floating Stars Background */}
+      <div className="floating-stars">
+        {[...Array(20)].map((_, i) => (
+          <div 
+            key={i}
+            className="star animate-float"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`
+            }}
+          />
+        ))}
+      </div>
+
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+      <section className="container mx-auto px-6 py-16 relative z-10">
+        <div className="text-center mb-12 animate-fade-in">
+          <h1 className="font-serif text-5xl md:text-7xl font-normal text-white mb-6 leading-tight">
             Sleep Sanctuary
           </h1>
-          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-white/80 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
             Discover peaceful bedtime stories, calming sounds, and meditation music 
             designed to help you drift into restful sleep.
           </p>
           
           {!user && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link to="/auth">
-                <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white px-8 py-4 rounded-2xl font-medium text-lg shadow-2xl button-pulse animate-glow"
+                >
+                  <Sparkles className="mr-2 h-5 w-5" />
                   Start Your Journey
                 </Button>
               </Link>
-              <p className="text-white/60 text-sm">
+              <p className="text-white/60 text-sm font-light">
                 Free preview • Full access with account
               </p>
             </div>
@@ -114,66 +144,82 @@ const HomePage = () => {
       </section>
 
       {/* Categories */}
-      <section className="container mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold text-white mb-6">Explore Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <CategoryCard
+      <section className="container mx-auto px-6 py-12 relative z-10">
+        <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">Explore Categories</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {categories.map((category, index) => (
+            <div 
               key={category.id}
-              category={category}
-              trackCount={getTrackCountByCategory(category.id)}
-              onClick={() => handleCategoryClick(category.id)}
-            />
+              className="animate-scale-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <CategoryCard
+                category={category}
+                trackCount={getTrackCountByCategory(category.id)}
+                onClick={() => handleCategoryClick(category.id)}
+              />
+            </div>
           ))}
         </div>
       </section>
 
       {/* Sample/Featured Content */}
-      <section className="container mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold text-white mb-6">
+      <section className="container mx-auto px-6 py-12 relative z-10">
+        <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">
           {user ? 'Featured Content' : 'Sample Tracks'}
         </h2>
         {!user && (
-          <p className="text-white/70 mb-6">
+          <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
             Try these sample tracks from each category. Sign up for full access to our complete library.
           </p>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {featuredTracks.map((track) => (
-            <TrackCard
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {featuredTracks.map((track, index) => (
+            <div 
               key={track.id}
-              track={track}
-              isPlaying={currentTrack?.id === track.id && isPlaying}
-              onPlay={() => handlePlayTrack(track)}
-            />
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
+              <TrackCard
+                track={track}
+                isPlaying={currentTrack?.id === track.id && isPlaying}
+                onPlay={() => handlePlayTrack(track)}
+              />
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Real Stats Section */}
-      <section className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
-            <CardContent className="p-6">
-              <Star className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-white">{getTotalTrackCount()}</h3>
-              <p className="text-white/70">Audio Tracks</p>
+      {/* Stats Section */}
+      <section className="container mx-auto px-6 py-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="glass-card glass-card-hover text-center group">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Star className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-2">{getTotalTrackCount()}</h3>
+              <p className="text-white/70 font-light">Audio Tracks</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
-            <CardContent className="p-6">
-              <Star className="h-8 w-8 text-green-400 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-white">{getFreeTrackCount()}</h3>
-              <p className="text-white/70">Free Tracks</p>
+          <Card className="glass-card glass-card-hover text-center group">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-400 to-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Sparkles className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-2">{getFreeTrackCount()}</h3>
+              <p className="text-white/70 font-light">Free Tracks</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center">
-            <CardContent className="p-6">
-              <Clock className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-              <h3 className="text-2xl font-bold text-white">{getTotalDurationMinutes()}</h3>
-              <p className="text-white/70">Minutes of Content</p>
+          <Card className="glass-card glass-card-hover text-center group">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Clock className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-2">{getTotalDurationMinutes()}</h3>
+              <p className="text-white/70 font-light">Minutes of Content</p>
             </CardContent>
           </Card>
         </div>
@@ -189,7 +235,7 @@ const HomePage = () => {
       />
       
       {/* Bottom spacing for fixed player */}
-      <div className="h-24"></div>
+      <div className="h-32"></div>
     </div>
   );
 };
