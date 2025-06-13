@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Heart, Clock } from 'lucide-react';
+import { Play, Clock } from 'lucide-react';
 
 interface TrackCardProps {
   track: {
@@ -15,12 +15,10 @@ interface TrackCardProps {
     thumbnail_url?: string;
   };
   isPlaying?: boolean;
-  isFavorite?: boolean;
   onPlay: () => void;
-  onFavorite: () => void;
 }
 
-const TrackCard = ({ track, isPlaying, isFavorite, onPlay, onFavorite }: TrackCardProps) => {
+const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
   const formatDuration = (seconds?: number) => {
     if (!seconds) return '';
     const minutes = Math.floor(seconds / 60);
@@ -64,15 +62,6 @@ const TrackCard = ({ track, isPlaying, isFavorite, onPlay, onFavorite }: TrackCa
                 >
                   <Play className="h-4 w-4 mr-1" />
                   {isPlaying ? 'Playing' : 'Play'}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onFavorite}
-                  className={`${isFavorite ? 'text-red-400' : 'text-white'} hover:bg-white/10`}
-                >
-                  <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
                 </Button>
               </div>
               
