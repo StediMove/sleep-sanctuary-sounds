@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -154,12 +153,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 max={duration || 100}
                 step={1}
                 onValueChange={handleSeek}
-                className="w-full"
-                style={{
-                  '--track-bg': 'rgba(255, 255, 255, 0.3)',
-                  '--range-bg': 'rgb(147, 51, 234)',
-                  '--thumb-bg': 'rgb(147, 51, 234)'
-                } as React.CSSProperties}
+                className="w-full audio-progress-slider"
               />
             </div>
             
@@ -175,12 +169,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                   max={1}
                   step={0.1}
                   onValueChange={handleVolumeChange}
-                  className="w-full"
-                  style={{
-                    '--track-bg': 'rgba(255, 255, 255, 0.3)',
-                    '--range-bg': 'rgb(147, 51, 234)',
-                    '--thumb-bg': 'rgb(147, 51, 234)'
-                  } as React.CSSProperties}
+                  className="w-full volume-slider"
                 />
               </div>
             </div>

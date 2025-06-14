@@ -8,7 +8,7 @@ const Header = () => {
   const { user, signOut } = useAuth();
 
   return (
-    <header className="glass-card border-white/10 sticky top-0 z-50 mx-4 mt-4 rounded-2xl backdrop-blur-md bg-slate-900/70">
+    <header className="bg-slate-900 border-slate-700 sticky top-0 z-50 mx-4 mt-4 rounded-2xl border">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3 group">
           <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 group-hover:scale-110 transition-transform duration-300 shadow-lg">
