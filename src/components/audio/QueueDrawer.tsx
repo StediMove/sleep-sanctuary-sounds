@@ -11,13 +11,15 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { QueueTrack } from '@/hooks/useQueue';
+import TrackContextMenu from './TrackContextMenu';
 import { 
   ListMusic, 
   Play, 
   X, 
   GripVertical, 
   Trash2,
-  Music
+  Music,
+  MoreVertical
 } from 'lucide-react';
 
 interface QueueDrawerProps {
@@ -27,6 +29,9 @@ interface QueueDrawerProps {
   onRemoveTrack: (index: number) => void;
   onClearQueue: () => void;
   onMoveTrack: (fromIndex: number, toIndex: number) => void;
+  onAddToQueue: (track: QueueTrack) => void;
+  onPlayNext: (track: QueueTrack) => void;
+  onReplaceQueue: (track: QueueTrack) => void;
 }
 
 const QueueDrawer: React.FC<QueueDrawerProps> = ({
@@ -35,7 +40,10 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
   onPlayTrack,
   onRemoveTrack,
   onClearQueue,
-  onMoveTrack
+  onMoveTrack,
+  onAddToQueue,
+  onPlayNext,
+  onReplaceQueue
 }) => {
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
 
@@ -67,13 +75,6 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
   const handleRemoveTrack = (index: number) => {
     console.log('Removing track at index:', index);
     onRemoveTrack(index);
-  };
-
-  const formatTime = (duration?: number) => {
-    if (!duration) return '';
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const getCategoryColor = (categoryName: string) => {
@@ -174,12 +175,6 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      {track.duration && (
-                        <span className="text-white/60 text-sm">
-                          {formatTime(track.duration)}
-                        </span>
-                      )}
-                      
                       <Button
                         variant="ghost"
                         size="sm"
@@ -188,6 +183,21 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                       >
                         <Play className="h-4 w-4" />
                       </Button>
+
+                      <TrackContextMenu
+                        track={track}
+                        onAddToQueue={onAddToQueue}
+                        onPlayNext={onPlayNext}
+                        onReplaceQueue={onReplaceQueue}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white hover:bg-white/10"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </TrackContextMenu>
                       
                       <Button
                         variant="ghost"

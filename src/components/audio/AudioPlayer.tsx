@@ -40,9 +40,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     isShuffled,
     isPaused,
     setLoopMode,
-    goToNext,
-    goToPrevious,
-    playTrackAt,
+    addToQueue,
+    playNext,
+    replaceQueue,
     removeFromQueue,
     clearQueue,
     moveTrack,
@@ -50,6 +50,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     resumeQueue,
     getNextTrack,
     getPreviousTrack,
+    goToNext,
+    goToPrevious,
+    playTrackAt,
     currentTrack: queueCurrentTrack
   } = useQueueContext();
 
@@ -136,6 +139,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    console.log('Audio effect triggered:', { isPlaying, displayTrack: displayTrack?.title });
 
     if (isPlaying) {
       const playPromise = audio.play();
@@ -326,6 +331,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 onRemoveTrack={removeFromQueue}
                 onClearQueue={clearQueue}
                 onMoveTrack={moveTrack}
+                onAddToQueue={addToQueue}
+                onPlayNext={playNext}
+                onReplaceQueue={replaceQueue}
               />
               
               <Button
