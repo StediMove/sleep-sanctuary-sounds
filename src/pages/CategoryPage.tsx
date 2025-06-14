@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -179,18 +178,6 @@ const CategoryPage = () => {
           </div>
         )}
       </div>
-
-      {/* Audio Player - only show if there's a current track */}
-      {displayTrack && (
-        <AudioPlayer
-          currentTrack={displayTrack}
-          isPlaying={isGlobalPlaying}
-          onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
-          onTrackChange={handleTrackChange}
-          categoryTracks={filteredTracks}
-          currentCategoryIndex={currentCategoryIndex}
-        />
-      )}
       
       {/* Bottom spacing for fixed player */}
       <div className="h-24"></div>

@@ -13,8 +13,38 @@ import CategoryPage from './pages/CategoryPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFound from './pages/NotFound';
 import Header from './components/layout/Header';
+import AudioPlayer from './components/audio/AudioPlayer';
+import { useQueueContext } from '@/contexts/QueueContext';
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const { currentTrack, isGlobalPlaying, setIsGlobalPlaying } = useQueueContext();
+
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen">
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/category/:categoryId" element={<CategoryPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        
+        {/* Global Audio Player - always visible when there's a track */}
+        {currentTrack && (
+          <AudioPlayer
+            currentTrack={currentTrack}
+            isPlaying={isGlobalPlaying}
+            onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
+          />
+        )}
+      </div>
+    </BrowserRouter>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -23,18 +53,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen">
-              <Header />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/category/:categoryId" element={<CategoryPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-          </BrowserRouter>
+          <AppContent />
         </TooltipProvider>
       </QueueProvider>
     </AuthProvider>

@@ -24,6 +24,7 @@ export const useQueue = () => {
   const [originalQueue, setOriginalQueue] = useState<QueueTrack[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [pausedIndex, setPausedIndex] = useState(0);
+  const [pausedQueue, setPausedQueue] = useState<QueueTrack[]>([]);
   const [isGlobalPlaying, setIsGlobalPlaying] = useState(false);
   const [pausedTrack, setPausedTrack] = useState<QueueTrack | null>(null);
 
@@ -49,14 +50,16 @@ export const useQueue = () => {
   const replaceQueue = useCallback((track: QueueTrack) => {
     console.log('Replacing queue with track:', track);
     
-    // If we have an active queue, pause it instead of replacing
+    // If we have an active queue, pause it properly
     if (queue.length > 0 && !isPaused) {
       console.log('Pausing current queue to play new track');
       setIsPaused(true);
       setPausedIndex(currentIndex);
+      setPausedQueue([...queue]); // Store the entire queue
       setPausedTrack(queue[currentIndex]);
     }
     
+    // Set new single track as active queue
     setQueue([track]);
     setCurrentIndex(0);
     setIsShuffled(false);
@@ -84,6 +87,7 @@ export const useQueue = () => {
     setIsShuffled(false);
     setOriginalQueue([]);
     setIsPaused(false);
+    setPausedQueue([]);
     setPausedTrack(null);
   }, []);
 
@@ -111,19 +115,22 @@ export const useQueue = () => {
     if (queue.length > 0) {
       setIsPaused(true);
       setPausedIndex(currentIndex);
+      setPausedQueue([...queue]);
       setPausedTrack(queue[currentIndex]);
     }
   }, [currentIndex, queue]);
 
   const resumeQueue = useCallback(() => {
     console.log('Resuming queue from paused state');
-    if (pausedTrack && queue.length > 0) {
+    if (pausedQueue.length > 0) {
       // Restore the paused queue
-      setIsPaused(false);
+      setQueue([...pausedQueue]);
       setCurrentIndex(pausedIndex);
+      setIsPaused(false);
+      setPausedQueue([]);
       setPausedTrack(null);
     }
-  }, [pausedTrack, pausedIndex, queue]);
+  }, [pausedQueue, pausedIndex]);
 
   const shuffleQueue = useCallback(() => {
     if (!isShuffled) {

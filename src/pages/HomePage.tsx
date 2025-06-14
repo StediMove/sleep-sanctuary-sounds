@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import CategoryCard from '@/components/content/CategoryCard';
 import TrackCard from '@/components/content/TrackCard';
-import AudioPlayer from '@/components/audio/AudioPlayer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Star, Sparkles } from 'lucide-react';
@@ -248,17 +246,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Audio Player - only show if there's a current track */}
-      {displayTrack && (
-        <AudioPlayer
-          currentTrack={displayTrack}
-          isPlaying={isGlobalPlaying}
-          onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
-          onTrackChange={handleTrackChange}
-          categoryTracks={featuredTracks}
-        />
-      )}
-      
       {/* Bottom spacing for fixed player */}
       <div className="h-32"></div>
     </div>
