@@ -39,12 +39,6 @@ const HomePage = () => {
   // Use real categories data
   const categories = realCategories;
 
-  // Get sample tracks for non-users
-  const sampleTracks = getSampleTracks().map(track => ({
-    ...track,
-    categories: { name: categories.find(cat => cat.id === track?.category)?.name || 'Unknown' }
-  }));
-  
   // New data for FeaturedContent component
   const mapTracks = (tracks: any[]) => tracks.map(track => ({
     ...track,
