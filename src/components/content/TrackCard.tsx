@@ -28,7 +28,7 @@ const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
       case 'bedtime stories':
         return { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-400/30' };
       case 'meditation music':
-        return { bg: 'bg-teal-500/20', text: 'text-teal-400', border: 'border-teal-400/30' };
+        return { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-400/30' };
       case 'calming sounds':
         return { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-400/30' };
       default:
@@ -44,11 +44,26 @@ const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
         <div className="flex items-start space-x-6 flex-1">
           {/* Enhanced Thumbnail */}
           <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
-              {isPlaying ? (
-                <Pause className="h-8 w-8 text-white" />
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+              {track.thumbnail_url ? (
+                <img 
+                  src={track.thumbnail_url} 
+                  alt={track.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to icon if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement!.innerHTML = isPlaying 
+                      ? '<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
+                      : '<svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="m7 4 10 6L7 16V4z"/></svg>';
+                  }}
+                />
               ) : (
-                <Play className="h-8 w-8 text-white ml-1" />
+                isPlaying ? (
+                  <Pause className="h-8 w-8 text-white" />
+                ) : (
+                  <Play className="h-8 w-8 text-white ml-1" />
+                )
               )}
             </div>
             {isPlaying && (

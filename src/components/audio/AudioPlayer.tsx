@@ -154,7 +154,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 max={duration || 100}
                 step={1}
                 onValueChange={handleSeek}
-                className="w-full [&>span[role=slider]]:bg-purple-500 [&>span[role=slider]]:border-purple-500 [&>span[data-orientation=horizontal]]:bg-purple-500"
+                className="w-full"
+                style={{
+                  '--track-bg': 'rgba(255, 255, 255, 0.3)',
+                  '--range-bg': 'rgb(147, 51, 234)',
+                  '--thumb-bg': 'rgb(147, 51, 234)'
+                } as React.CSSProperties}
               />
             </div>
             
@@ -170,7 +175,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                   max={1}
                   step={0.1}
                   onValueChange={handleVolumeChange}
-                  className="w-full [&>span[role=slider]]:bg-purple-500 [&>span[role=slider]]:border-purple-500 [&>span[data-orientation=horizontal]]:bg-purple-500"
+                  className="w-full"
+                  style={{
+                    '--track-bg': 'rgba(255, 255, 255, 0.3)',
+                    '--range-bg': 'rgb(147, 51, 234)',
+                    '--thumb-bg': 'rgb(147, 51, 234)'
+                  } as React.CSSProperties}
                 />
               </div>
             </div>

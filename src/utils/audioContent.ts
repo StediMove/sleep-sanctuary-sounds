@@ -7,6 +7,7 @@ export const realAudioContent = [
     description: 'A gentle bedtime story about a sleepy bear finding his way to dreamland.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/Benny the Sleepy Bear (short).mp3',
+    thumbnail_url: '/audio/thumbnails/Benny the Sleepy Bear (short).png',
     duration: 300, // 5:00 minutes
     is_premium: false,
     tags: ['animals', 'adventure', 'friendship']
@@ -17,6 +18,7 @@ export const realAudioContent = [
     description: 'An enchanting adventure story about Captain Nilo and his magical journey.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/Captain Nilo and the Starwhale.mp3',
+    thumbnail_url: '/audio/thumbnails/Captain Nilo and the Starwhale.png',
     duration: 600, // 10:00 minutes
     is_premium: true,
     tags: ['fantasy', 'adventure', 'ocean']
@@ -37,6 +39,7 @@ export const realAudioContent = [
     description: 'A mystical tale about a special forest waiting for someone special.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/The Forest That Waits for One.mp3',
+    thumbnail_url: '/audio/thumbnails/The Forest That Waits for One.png',
     duration: 480, // 8:00 minutes
     is_premium: true,
     tags: ['fantasy', 'nature', 'mystery']
@@ -209,7 +212,7 @@ export const realCategories = [
     slug: 'meditation-music',
     description: 'Peaceful melodies for meditation and mindfulness',
     icon: 'headphones',
-    color: '#059669' // Green
+    color: '#10b981' // Green
   }
 ];
 

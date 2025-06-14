@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
@@ -160,9 +159,9 @@
   }
 }
 
-/* Purple slider styling */
+/* Purple slider styling with white track */
 [data-radix-slider-track] {
-  background-color: rgba(148, 163, 184, 0.3) !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 [data-radix-slider-range] {
