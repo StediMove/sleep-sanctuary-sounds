@@ -8,6 +8,7 @@ interface QueueContextType {
   currentIndex: number;
   loopMode: LoopMode;
   isShuffled: boolean;
+  isPaused: boolean;
   setLoopMode: (mode: LoopMode) => void;
   addToQueue: (track: QueueTrack) => void;
   playNext: (track: QueueTrack) => void;
@@ -16,6 +17,8 @@ interface QueueContextType {
   clearQueue: () => void;
   moveTrack: (fromIndex: number, toIndex: number) => void;
   shuffleQueue: () => void;
+  pauseQueue: () => void;
+  resumeQueue: () => void;
   getNextTrack: () => QueueTrack | null;
   getPreviousTrack: () => QueueTrack | null;
   goToNext: () => void;

@@ -39,6 +39,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     currentIndex,
     loopMode,
     isShuffled,
+    isPaused,
     setLoopMode,
     goToNext,
     goToPrevious,
@@ -46,13 +47,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     removeFromQueue,
     clearQueue,
     moveTrack,
+    pauseQueue,
+    resumeQueue,
     getNextTrack,
     getPreviousTrack,
     currentTrack: queueCurrentTrack
   } = useQueueContext();
 
-  // Use queue track if available, otherwise use prop
-  const displayTrack = queueCurrentTrack || currentTrack;
+  // Use queue track if not paused, otherwise use prop
+  const displayTrack = (!isPaused && queueCurrentTrack) || currentTrack;
 
   // Helper function to get random track from category (excluding current)
   const getRandomCategoryTrack = () => {
@@ -77,36 +80,29 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         return;
       }
 
-      // First check if there's a next track in queue
+      // If queue is paused or empty, play random track from category
+      if (isPaused || queue.length === 0) {
+        console.log('Queue is paused or empty, playing random track from category');
+        const randomTrack = getRandomCategoryTrack();
+        if (randomTrack && onTrackChange) {
+          console.log('Playing random category track:', randomTrack);
+          onTrackChange(randomTrack);
+        }
+        return;
+      }
+
+      // Check if there's a next track in queue
       const nextTrack = getNextTrack();
       if (nextTrack) {
         console.log('Moving to next track in queue:', nextTrack);
         goToNext();
       } else {
-        // Queue is empty or finished, play random track from category
+        // Queue finished, play random track from category
         console.log('Queue finished, playing random track from category');
         const randomTrack = getRandomCategoryTrack();
         if (randomTrack && onTrackChange) {
           console.log('Playing random category track:', randomTrack);
           onTrackChange(randomTrack);
-        } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
-          // Fallback to next track in category if available
-          const nextCategoryIndex = currentCategoryIndex + 1;
-          if (nextCategoryIndex < categoryTracks.length) {
-            console.log('Playing next track in category:', categoryTracks[nextCategoryIndex]);
-            if (onTrackChange) {
-              onTrackChange(categoryTracks[nextCategoryIndex]);
-            }
-          } else if (loopMode === 'all') {
-            // Loop back to first track in category
-            console.log('Looping back to first track in category');
-            if (onTrackChange) {
-              onTrackChange(categoryTracks[0]);
-            }
-          }
-        } else if (onNext) {
-          console.log('No queue or category tracks, calling onNext');
-          onNext();
         }
       }
     };
@@ -122,15 +118,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [displayTrack, onNext, onTrackChange, queue, currentIndex, loopMode, goToNext, getNextTrack, categoryTracks, currentCategoryIndex]);
+  }, [displayTrack, onNext, onTrackChange, queue, currentIndex, loopMode, isPaused, goToNext, getNextTrack, categoryTracks, currentCategoryIndex]);
 
-  // Update parent when queue track changes
+  // Update parent when queue track changes (but not when paused)
   useEffect(() => {
-    if (queueCurrentTrack && onTrackChange) {
+    if (queueCurrentTrack && !isPaused && onTrackChange) {
       console.log('Queue track changed, updating parent:', queueCurrentTrack);
       onTrackChange(queueCurrentTrack);
     }
-  }, [queueCurrentTrack, onTrackChange]);
+  }, [queueCurrentTrack, isPaused, onTrackChange]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -171,7 +167,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const handleNext = () => {
-    console.log('Next button clicked');
+    console.log('Next button clicked, isPaused:', isPaused);
+    
+    // If queue is paused, resume it
+    if (isPaused) {
+      console.log('Resuming queue');
+      resumeQueue();
+      return;
+    }
+
     if (queue.length > 0) {
       const nextTrack = getNextTrack();
       if (nextTrack) {
@@ -213,7 +217,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const handlePrevious = () => {
-    console.log('Previous button clicked');
+    console.log('Previous button clicked, isPaused:', isPaused);
+    
+    // If queue is paused, resume it
+    if (isPaused) {
+      console.log('Resuming queue');
+      resumeQueue();
+      return;
+    }
+
     if (queue.length > 0) {
       const prevTrack = getPreviousTrack();
       if (prevTrack) {
@@ -269,12 +281,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   // Check if navigation buttons should be enabled
-  const canGoNext = queue.length > 0 
-    ? getNextTrack() !== null 
+  const canGoNext = isPaused || queue.length > 0 
+    ? true // Always enabled when queue is paused or has tracks
     : categoryTracks.length > 0 || !!onNext;
     
-  const canGoPrevious = queue.length > 0 
-    ? getPreviousTrack() !== null 
+  const canGoPrevious = isPaused || queue.length > 0 
+    ? true // Always enabled when queue is paused or has tracks
     : (categoryTracks.length > 0 && currentCategoryIndex > 0) || loopMode === 'all' || !!onPrevious;
   
   if (!displayTrack) return null;
@@ -291,7 +303,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex-1 min-w-0">
               <h4 className="text-white font-medium truncate">{displayTrack.title}</h4>
-              <p className="text-white/60 text-sm truncate">{displayTrack.categories?.name}</p>
+              <div className="flex items-center space-x-2">
+                <p className="text-white/60 text-sm truncate">{displayTrack.categories?.name}</p>
+                {isPaused && (
+                  <span className="text-yellow-400 text-xs bg-yellow-400/10 px-2 py-1 rounded">Queue Paused</span>
+                )}
+              </div>
             </div>
             
             <div className="flex items-center space-x-2">

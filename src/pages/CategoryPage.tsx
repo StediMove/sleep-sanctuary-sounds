@@ -25,9 +25,11 @@ const CategoryPage = () => {
 
   const {
     currentTrack,
+    isPaused,
     addToQueue,
     playNext,
     replaceQueue,
+    pauseQueue,
   } = useQueueContext();
 
   const category = realCategories.find(cat => cat.id === categoryId);
@@ -40,7 +42,7 @@ const CategoryPage = () => {
   const filteredTracks = filterTracksByTags(allTracks, selectedTags);
 
   // Current track for category playback (either queue track or category track)
-  const displayTrack = currentTrack || currentCategoryTrack;
+  const displayTrack = (!isPaused && currentTrack) || currentCategoryTrack;
   
   // Find current track index in filtered tracks
   const currentCategoryIndex = displayTrack 
@@ -49,23 +51,17 @@ const CategoryPage = () => {
 
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from category page:', track);
-    const queueTrack = {
-      id: track.id,
-      title: track.title,
-      description: track.description,
-      duration: track.duration,
-      is_premium: track.is_premium,
-      tags: track.tags,
-      thumbnail_url: track.thumbnail_url,
-      categories: track.categories,
-      category_id: track.category_id,
-      file_path: track.file_path,
-    };
     
     if (displayTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
-      // Clear any existing queue and set as category track
+      // If there's a queue running, pause it and play this track
+      if (currentTrack && !isPaused) {
+        console.log('Pausing queue to play selected track');
+        pauseQueue();
+      }
+      
+      // Set as category track and play
       setCurrentCategoryTrack(track);
       setIsPlaying(true);
     }
