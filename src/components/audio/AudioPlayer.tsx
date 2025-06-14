@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -314,7 +315,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         preload="metadata"
       />
       <Card className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-white/10 p-4 z-40">
-        <div className="container mx-auto">
+        <div className="mx-auto w-full max-w-screen-2xl">
           <div className="flex items-center justify-between mb-2">
             <div className="flex-1 min-w-0">
               <h4 className="text-white font-medium truncate">{currentTrack.title}</h4>
@@ -414,9 +415,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               {formatTime(duration)}
             </span>
             
-            <div className="flex items-center space-x-2 min-w-[100px]">
+            <div className="flex items-center space-x-2 md:min-w-[100px]">
               <Volume2 className="h-4 w-4 text-white/60" />
-              <div className="w-16">
+              <div className="w-16 hidden md:block">
                 <Slider
                   value={[volume]}
                   max={1}

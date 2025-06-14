@@ -65,7 +65,7 @@ const FeaturedContent = ({
           align: "start",
           loop: false,
         }}
-        className="w-full px-12"
+        className="w-full px-4 md:px-12"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {tracks.map((track) => (
