@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -63,6 +62,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const availableTracks = categoryTracks.filter(track => track.id !== displayTrack?.id);
     const randomIndex = Math.floor(Math.random() * availableTracks.length);
     return availableTracks[randomIndex];
+  };
+
+  // Helper function to check if we're at the end of the queue
+  const isAtEndOfQueue = () => {
+    return queue.length > 0 && !isPaused && currentIndex >= queue.length - 1;
   };
 
   useEffect(() => {
@@ -167,7 +171,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const handleNext = () => {
-    console.log('Next button clicked, isPaused:', isPaused);
+    console.log('Next button clicked, isPaused:', isPaused, 'isAtEndOfQueue:', isAtEndOfQueue());
     
     // If queue is paused, resume it
     if (isPaused) {
@@ -176,41 +180,28 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       return;
     }
 
-    if (queue.length > 0) {
+    // If we have a queue and we're not at the end, try to go to next track
+    if (queue.length > 0 && !isAtEndOfQueue()) {
       const nextTrack = getNextTrack();
       if (nextTrack) {
         console.log('Moving to next track in queue');
         goToNext();
-      } else {
-        // Queue finished, play random track from category
-        const randomTrack = getRandomCategoryTrack();
-        if (randomTrack && onTrackChange) {
-          console.log('Queue finished, playing random category track');
-          onTrackChange(randomTrack);
-        }
+        return;
       }
-    } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
-      // Play next track in category
-      const nextCategoryIndex = currentCategoryIndex + 1;
-      if (nextCategoryIndex < categoryTracks.length) {
-        console.log('Playing next track in category');
-        if (onTrackChange) {
-          onTrackChange(categoryTracks[nextCategoryIndex]);
-        }
-      } else if (loopMode === 'all') {
-        // Loop back to first track
-        if (onTrackChange) {
-          onTrackChange(categoryTracks[0]);
-        }
-      } else {
-        // Play random track when at end
-        const randomTrack = getRandomCategoryTrack();
-        if (randomTrack && onTrackChange) {
-          console.log('At end of category, playing random track');
-          onTrackChange(randomTrack);
-        }
+    }
+
+    // If we're at the end of queue or no queue, play random track from category
+    if (categoryTracks.length > 0) {
+      const randomTrack = getRandomCategoryTrack();
+      if (randomTrack && onTrackChange) {
+        console.log('Playing random category track (queue finished or empty)');
+        onTrackChange(randomTrack);
+        return;
       }
-    } else if (onNext) {
+    }
+
+    // Fallback to onNext if provided
+    if (onNext) {
       console.log('No queue or category tracks, calling onNext');
       onNext();
     }
@@ -280,14 +271,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Check if navigation buttons should be enabled
-  const canGoNext = isPaused || queue.length > 0 
-    ? true // Always enabled when queue is paused or has tracks
-    : categoryTracks.length > 0 || !!onNext;
-    
-  const canGoPrevious = isPaused || queue.length > 0 
-    ? true // Always enabled when queue is paused or has tracks
-    : (categoryTracks.length > 0 && currentCategoryIndex > 0) || loopMode === 'all' || !!onPrevious;
+  // Navigation buttons should always be enabled when we have category tracks to fall back to
+  const canGoNext = isPaused || queue.length > 0 || categoryTracks.length > 0 || !!onNext;
+  const canGoPrevious = isPaused || queue.length > 0 || 
+    (categoryTracks.length > 0 && (currentCategoryIndex > 0 || loopMode === 'all')) || !!onPrevious;
   
   if (!displayTrack) return null;
 
