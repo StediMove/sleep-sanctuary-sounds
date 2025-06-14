@@ -10,6 +10,8 @@ interface QueueContextType {
   isShuffled: boolean;
   isPaused: boolean;
   isGlobalPlaying: boolean;
+  pausedTrack: QueueTrack | null;
+  hasActiveQueue: boolean;
   setLoopMode: (mode: LoopMode) => void;
   setIsGlobalPlaying: (playing: boolean) => void;
   addToQueue: (track: QueueTrack) => void;

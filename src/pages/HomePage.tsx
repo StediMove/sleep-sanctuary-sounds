@@ -30,9 +30,11 @@ const HomePage = () => {
     currentTrack,
     isGlobalPlaying,
     setIsGlobalPlaying,
+    hasActiveQueue,
     addToQueue,
     playNext,
     replaceQueue,
+    pauseQueue,
   } = useQueueContext();
 
   // Use real categories data
@@ -57,21 +59,31 @@ const HomePage = () => {
     // Set as current home track
     setCurrentHomeTrack(track);
     
-    // Only replace queue if it's a different track
-    if (currentTrack?.id !== track.id) {
-      replaceQueue({
-        id: track.id,
-        title: track.title,
-        description: track.description,
-        duration: track.duration,
-        is_premium: track.is_premium,
-        tags: track.tags,
-        thumbnail_url: track.thumbnail_url,
-        categories: track.categories,
-        category_id: track.category_id,
-        file_path: track.file_path || '',
-      });
+    // Check if this track is already playing
+    if (currentTrack?.id === track.id && isGlobalPlaying) {
+      console.log('Track already playing, just updating home state');
+      return;
     }
+    
+    // If we have an active queue, pause it and play this track
+    if (hasActiveQueue) {
+      console.log('Pausing active queue to play home track');
+      pauseQueue();
+    }
+    
+    // Replace queue with new track
+    replaceQueue({
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      duration: track.duration,
+      is_premium: track.is_premium,
+      tags: track.tags,
+      thumbnail_url: track.thumbnail_url,
+      categories: track.categories,
+      category_id: track.category_id,
+      file_path: track.file_path || '',
+    });
     
     setIsGlobalPlaying(true);
   };
@@ -95,12 +107,14 @@ const HomePage = () => {
 
   // Initialize current track if we have one playing
   useEffect(() => {
-    if (currentTrack && !currentHomeTrack) {
+    if (currentTrack && !hasActiveQueue && !currentHomeTrack) {
+      console.log('Setting current home track from global state');
       setCurrentHomeTrack(currentTrack);
     }
-  }, [currentTrack, currentHomeTrack]);
+  }, [currentTrack, currentHomeTrack, hasActiveQueue]);
 
-  const displayTrack = currentHomeTrack || currentTrack;
+  // Use home track if no active queue, otherwise use current track
+  const displayTrack = !hasActiveQueue && currentHomeTrack ? currentHomeTrack : currentTrack;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-deep via-slate-900 to-navy-deep relative overflow-hidden">

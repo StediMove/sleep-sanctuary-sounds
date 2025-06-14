@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 
 export type QueueTrack = {
@@ -24,6 +25,7 @@ export const useQueue = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [pausedIndex, setPausedIndex] = useState(0);
   const [isGlobalPlaying, setIsGlobalPlaying] = useState(false);
+  const [pausedTrack, setPausedTrack] = useState<QueueTrack | null>(null);
 
   const addToQueue = useCallback((track: QueueTrack) => {
     console.log('Adding track to queue:', track);
@@ -46,11 +48,20 @@ export const useQueue = () => {
 
   const replaceQueue = useCallback((track: QueueTrack) => {
     console.log('Replacing queue with track:', track);
+    
+    // If we have an active queue, pause it instead of replacing
+    if (queue.length > 0 && !isPaused) {
+      console.log('Pausing current queue to play new track');
+      setIsPaused(true);
+      setPausedIndex(currentIndex);
+      setPausedTrack(queue[currentIndex]);
+    }
+    
     setQueue([track]);
     setCurrentIndex(0);
     setIsShuffled(false);
     setOriginalQueue([]);
-  }, []);
+  }, [queue, currentIndex, isPaused]);
 
   const removeFromQueue = useCallback((index: number) => {
     console.log('Removing track at index:', index);
@@ -59,7 +70,6 @@ export const useQueue = () => {
       if (index < currentIndex) {
         setCurrentIndex(prev => prev - 1);
       } else if (index === currentIndex && newQueue.length > 0) {
-        // If removing current track, adjust index
         setCurrentIndex(prev => Math.min(prev, newQueue.length - 1));
       }
       console.log('Queue after removal:', newQueue);
@@ -73,6 +83,8 @@ export const useQueue = () => {
     setCurrentIndex(0);
     setIsShuffled(false);
     setOriginalQueue([]);
+    setIsPaused(false);
+    setPausedTrack(null);
   }, []);
 
   const moveTrack = useCallback((fromIndex: number, toIndex: number) => {
@@ -82,7 +94,6 @@ export const useQueue = () => {
       const [movedTrack] = newQueue.splice(fromIndex, 1);
       newQueue.splice(toIndex, 0, movedTrack);
       
-      // Adjust current index if needed
       if (fromIndex === currentIndex) {
         setCurrentIndex(toIndex);
       } else if (fromIndex < currentIndex && toIndex >= currentIndex) {
@@ -97,15 +108,22 @@ export const useQueue = () => {
 
   const pauseQueue = useCallback(() => {
     console.log('Pausing queue at index:', currentIndex);
-    setIsPaused(true);
-    setPausedIndex(currentIndex);
-  }, [currentIndex]);
+    if (queue.length > 0) {
+      setIsPaused(true);
+      setPausedIndex(currentIndex);
+      setPausedTrack(queue[currentIndex]);
+    }
+  }, [currentIndex, queue]);
 
   const resumeQueue = useCallback(() => {
-    console.log('Resuming queue from index:', pausedIndex);
-    setIsPaused(false);
-    setCurrentIndex(pausedIndex);
-  }, [pausedIndex]);
+    console.log('Resuming queue from paused state');
+    if (pausedTrack && queue.length > 0) {
+      // Restore the paused queue
+      setIsPaused(false);
+      setCurrentIndex(pausedIndex);
+      setPausedTrack(null);
+    }
+  }, [pausedTrack, pausedIndex, queue]);
 
   const shuffleQueue = useCallback(() => {
     if (!isShuffled) {
@@ -119,7 +137,6 @@ export const useQueue = () => {
       setCurrentIndex(0);
       setIsShuffled(true);
     } else {
-      // Restore original order
       if (originalQueue.length > 0) {
         const currentTrack = queue[currentIndex];
         const originalIndex = originalQueue.findIndex(track => track.id === currentTrack.id);
@@ -132,7 +149,7 @@ export const useQueue = () => {
   }, [queue, currentIndex, isShuffled, originalQueue]);
 
   const getNextTrack = useCallback(() => {
-    if (queue.length === 0 || isPaused) return null;
+    if (queue.length === 0) return null;
     
     if (loopMode === 'one') {
       return queue[currentIndex];
@@ -147,10 +164,10 @@ export const useQueue = () => {
     }
     
     return null;
-  }, [queue, currentIndex, loopMode, isPaused]);
+  }, [queue, currentIndex, loopMode]);
 
   const getPreviousTrack = useCallback(() => {
-    if (queue.length === 0 || isPaused) return null;
+    if (queue.length === 0) return null;
     
     if (currentIndex > 0) {
       return queue[currentIndex - 1];
@@ -161,14 +178,10 @@ export const useQueue = () => {
     }
     
     return null;
-  }, [queue, currentIndex, loopMode, isPaused]);
+  }, [queue, currentIndex, loopMode]);
 
   const goToNext = useCallback(() => {
-    console.log('Going to next track, current index:', currentIndex, 'isPaused:', isPaused);
-    if (isPaused) {
-      resumeQueue();
-      return;
-    }
+    console.log('Going to next track, current index:', currentIndex);
     
     if (loopMode === 'one') return;
     
@@ -180,14 +193,10 @@ export const useQueue = () => {
       console.log('Looping back to start');
       setCurrentIndex(0);
     }
-  }, [currentIndex, queue.length, loopMode, isPaused, resumeQueue]);
+  }, [currentIndex, queue.length, loopMode]);
 
   const goToPrevious = useCallback(() => {
-    console.log('Going to previous track, current index:', currentIndex, 'isPaused:', isPaused);
-    if (isPaused) {
-      resumeQueue();
-      return;
-    }
+    console.log('Going to previous track, current index:', currentIndex);
     
     if (currentIndex > 0) {
       const prevIndex = currentIndex - 1;
@@ -198,17 +207,19 @@ export const useQueue = () => {
       console.log('Looping to end, index:', lastIndex);
       setCurrentIndex(lastIndex);
     }
-  }, [currentIndex, queue.length, loopMode, isPaused, resumeQueue]);
+  }, [currentIndex, queue.length, loopMode]);
 
   const playTrackAt = useCallback((index: number) => {
     console.log('Playing track at index:', index);
     if (index >= 0 && index < queue.length) {
       setCurrentIndex(index);
       setIsPaused(false);
+      setPausedTrack(null);
     }
   }, [queue.length]);
 
-  const currentTrack = !isPaused ? (queue[currentIndex] || null) : null;
+  const currentTrack = !isPaused && queue.length > 0 ? queue[currentIndex] : null;
+  const hasActiveQueue = queue.length > 0 && !isPaused;
 
   return {
     queue,
@@ -218,6 +229,8 @@ export const useQueue = () => {
     isShuffled,
     isPaused,
     isGlobalPlaying,
+    pausedTrack,
+    hasActiveQueue,
     setLoopMode,
     setIsGlobalPlaying,
     addToQueue,

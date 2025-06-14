@@ -27,9 +27,11 @@ const CategoryPage = () => {
     currentTrack,
     isGlobalPlaying,
     setIsGlobalPlaying,
+    hasActiveQueue,
     addToQueue,
     playNext,
     replaceQueue,
+    pauseQueue,
   } = useQueueContext();
 
   const category = realCategories.find(cat => cat.id === categoryId);
@@ -49,21 +51,31 @@ const CategoryPage = () => {
     const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
     setCurrentCategoryIndex(trackIndex);
     
-    // Only replace queue if it's a different track
-    if (currentTrack?.id !== track.id) {
-      replaceQueue({
-        id: track.id,
-        title: track.title,
-        description: track.description,
-        duration: track.duration,
-        is_premium: track.is_premium,
-        tags: track.tags,
-        thumbnail_url: track.thumbnail_url,
-        categories: track.categories,
-        category_id: track.category_id,
-        file_path: track.file_path || '',
-      });
+    // Check if this track is already playing
+    if (currentTrack?.id === track.id && isGlobalPlaying) {
+      console.log('Track already playing, just updating category state');
+      return;
     }
+    
+    // If we have an active queue, pause it and play this track
+    if (hasActiveQueue) {
+      console.log('Pausing active queue to play category track');
+      pauseQueue();
+    }
+    
+    // Replace queue with new track
+    replaceQueue({
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      duration: track.duration,
+      is_premium: track.is_premium,
+      tags: track.tags,
+      thumbnail_url: track.thumbnail_url,
+      categories: track.categories,
+      category_id: track.category_id,
+      file_path: track.file_path || '',
+    });
     
     setIsGlobalPlaying(true);
   };
@@ -89,14 +101,15 @@ const CategoryPage = () => {
 
   // Initialize current track if we have one playing
   useEffect(() => {
-    if (currentTrack && !currentCategoryTrack) {
+    if (currentTrack && !hasActiveQueue) {
       const trackIndex = allTracks.findIndex(t => t.id === currentTrack.id);
-      if (trackIndex >= 0) {
+      if (trackIndex >= 0 && !currentCategoryTrack) {
+        console.log('Setting current category track from global state');
         setCurrentCategoryTrack(currentTrack);
         setCurrentCategoryIndex(trackIndex);
       }
     }
-  }, [currentTrack, allTracks, currentCategoryTrack]);
+  }, [currentTrack, allTracks, currentCategoryTrack, hasActiveQueue]);
 
   if (!category) {
     return (
@@ -109,7 +122,8 @@ const CategoryPage = () => {
     );
   }
 
-  const displayTrack = currentCategoryTrack || currentTrack;
+  // Use category track if no active queue, otherwise use current track
+  const displayTrack = !hasActiveQueue && currentCategoryTrack ? currentCategoryTrack : currentTrack;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
