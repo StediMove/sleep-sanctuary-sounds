@@ -25,6 +25,21 @@ const TrackContextMenu: React.FC<TrackContextMenuProps> = ({
   onPlayNext,
   onReplaceQueue
 }) => {
+  const handleAddToQueue = () => {
+    console.log('Adding to queue:', track);
+    onAddToQueue(track);
+  };
+
+  const handlePlayNext = () => {
+    console.log('Playing next:', track);
+    onPlayNext(track);
+  };
+
+  const handleReplaceQueue = () => {
+    console.log('Replacing queue:', track);
+    onReplaceQueue(track);
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -32,14 +47,14 @@ const TrackContextMenu: React.FC<TrackContextMenuProps> = ({
       </ContextMenuTrigger>
       <ContextMenuContent className="bg-slate-800 border-white/10 text-white">
         <ContextMenuItem 
-          onClick={() => onAddToQueue(track)}
+          onClick={handleAddToQueue}
           className="hover:bg-white/10 focus:bg-white/10"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add to Queue
         </ContextMenuItem>
         <ContextMenuItem 
-          onClick={() => onPlayNext(track)}
+          onClick={handlePlayNext}
           className="hover:bg-white/10 focus:bg-white/10"
         >
           <Play className="h-4 w-4 mr-2" />
@@ -47,7 +62,7 @@ const TrackContextMenu: React.FC<TrackContextMenuProps> = ({
         </ContextMenuItem>
         <ContextMenuSeparator className="bg-white/10" />
         <ContextMenuItem 
-          onClick={() => onReplaceQueue(track)}
+          onClick={handleReplaceQueue}
           className="hover:bg-white/10 focus:bg-white/10"
         >
           <RotateCcw className="h-4 w-4 mr-2" />

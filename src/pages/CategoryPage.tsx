@@ -19,12 +19,13 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
+    queue,
+    currentTrack,
+    currentIndex,
     addToQueue,
     playNext,
     replaceQueue,
@@ -40,42 +41,24 @@ const CategoryPage = () => {
   const filteredTracks = filterTracksByTags(allTracks, selectedTags);
 
   const handlePlayTrack = (track: any) => {
-    const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
-    setCurrentTrackIndex(trackIndex);
+    console.log('Playing track from category page:', track);
+    const queueTrack = {
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      duration: track.duration,
+      is_premium: track.is_premium,
+      tags: track.tags,
+      thumbnail_url: track.thumbnail_url,
+      categories: track.categories,
+      category_id: track.category_id,
+      file_path: track.file_path,
+    };
     
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
-      setCurrentTrack(track);
-      setIsPlaying(true);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentTrackIndex < filteredTracks.length - 1) {
-      const nextIndex = currentTrackIndex + 1;
-      setCurrentTrackIndex(nextIndex);
-      setCurrentTrack(filteredTracks[nextIndex]);
-      setIsPlaying(true);
-    } else if (filteredTracks.length > 0) {
-      // Loop back to first track
-      setCurrentTrackIndex(0);
-      setCurrentTrack(filteredTracks[0]);
-      setIsPlaying(true);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentTrackIndex > 0) {
-      const prevIndex = currentTrackIndex - 1;
-      setCurrentTrackIndex(prevIndex);
-      setCurrentTrack(filteredTracks[prevIndex]);
-      setIsPlaying(true);
-    } else if (filteredTracks.length > 0) {
-      // Loop to last track
-      const lastIndex = filteredTracks.length - 1;
-      setCurrentTrackIndex(lastIndex);
-      setCurrentTrack(filteredTracks[lastIndex]);
+      replaceQueue(queueTrack);
       setIsPlaying(true);
     }
   };
@@ -91,26 +74,6 @@ const CategoryPage = () => {
   const handleClearAllTags = () => {
     setSelectedTags([]);
   };
-
-  const handleTrackChange = (track: any) => {
-    setCurrentTrack(track);
-    setIsPlaying(true);
-  };
-
-  // Update current track index when tracks change due to filtering
-  useEffect(() => {
-    if (currentTrack && filteredTracks.length > 0) {
-      const newIndex = filteredTracks.findIndex(t => t.id === currentTrack.id);
-      if (newIndex !== -1) {
-        setCurrentTrackIndex(newIndex);
-      } else {
-        // Current track is filtered out, stop playing
-        setCurrentTrack(null);
-        setIsPlaying(false);
-        setCurrentTrackIndex(0);
-      }
-    }
-  }, [filteredTracks, currentTrack]);
 
   if (!category) {
     return (
@@ -183,9 +146,6 @@ const CategoryPage = () => {
         currentTrack={currentTrack}
         isPlaying={isPlaying}
         onPlayPause={() => setIsPlaying(!isPlaying)}
-        onNext={filteredTracks.length > 1 ? handleNext : undefined}
-        onPrevious={filteredTracks.length > 1 ? handlePrevious : undefined}
-        onTrackChange={handleTrackChange}
       />
       
       {/* Bottom spacing for fixed player */}

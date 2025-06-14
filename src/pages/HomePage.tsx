@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import CategoryCard from '@/components/content/CategoryCard';
@@ -9,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Star, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useQueue } from '@/hooks/useQueue';
 import { 
   realAudioContent, 
   realCategories, 
@@ -23,9 +23,16 @@ const HomePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+
+  const {
+    queue,
+    currentTrack,
+    currentIndex,
+    addToQueue,
+    playNext,
+    replaceQueue,
+  } = useQueue();
 
   // Use real categories data
   const categories = realCategories;
@@ -44,44 +51,22 @@ const HomePage = () => {
     : sampleTracks;
 
   const handlePlayTrack = (track: any) => {
-    const trackIndex = featuredTracks.findIndex(t => t.id === track.id);
-    setCurrentTrackIndex(trackIndex);
+    console.log('Playing track:', track);
+    const queueTrack = {
+      id: track.id,
+      title: track.title,
+      description: track.description,
+      duration: track.duration,
+      is_premium: track.is_premium,
+      tags: track.tags,
+      thumbnail_url: track.thumbnail_url,
+      categories: track.categories,
+      category_id: track.category_id,
+      file_path: track.file_path,
+    };
     
-    if (currentTrack?.id === track.id) {
-      setIsPlaying(!isPlaying);
-    } else {
-      setCurrentTrack(track);
-      setIsPlaying(true);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentTrackIndex < featuredTracks.length - 1) {
-      const nextIndex = currentTrackIndex + 1;
-      setCurrentTrackIndex(nextIndex);
-      setCurrentTrack(featuredTracks[nextIndex]);
-      setIsPlaying(true);
-    } else if (featuredTracks.length > 0) {
-      // Loop back to first track
-      setCurrentTrackIndex(0);
-      setCurrentTrack(featuredTracks[0]);
-      setIsPlaying(true);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentTrackIndex > 0) {
-      const prevIndex = currentTrackIndex - 1;
-      setCurrentTrackIndex(prevIndex);
-      setCurrentTrack(featuredTracks[prevIndex]);
-      setIsPlaying(true);
-    } else if (featuredTracks.length > 0) {
-      // Loop to last track
-      const lastIndex = featuredTracks.length - 1;
-      setCurrentTrackIndex(lastIndex);
-      setCurrentTrack(featuredTracks[lastIndex]);
-      setIsPlaying(true);
-    }
+    replaceQueue(queueTrack);
+    setIsPlaying(true);
   };
 
   const handleCategoryClick = (categoryId: string) => {
@@ -184,6 +169,9 @@ const HomePage = () => {
                 track={track}
                 isPlaying={currentTrack?.id === track.id && isPlaying}
                 onPlay={() => handlePlayTrack(track)}
+                onAddToQueue={addToQueue}
+                onPlayNext={playNext}
+                onReplaceQueue={replaceQueue}
               />
             </div>
           ))}
@@ -230,8 +218,6 @@ const HomePage = () => {
         currentTrack={currentTrack}
         isPlaying={isPlaying}
         onPlayPause={() => setIsPlaying(!isPlaying)}
-        onNext={featuredTracks.length > 1 ? handleNext : undefined}
-        onPrevious={featuredTracks.length > 1 ? handlePrevious : undefined}
       />
       
       {/* Bottom spacing for fixed player */}
