@@ -1,8 +1,11 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle } from 'lucide-react';
+import { useQueue, LoopMode } from '@/hooks/useQueue';
+import QueueDrawer from './QueueDrawer';
 
 interface AudioPlayerProps {
   currentTrack: any;
@@ -10,6 +13,7 @@ interface AudioPlayerProps {
   onPlayPause: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
+  onTrackChange?: (track: any) => void;
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({
@@ -17,12 +21,27 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   isPlaying,
   onPlayPause,
   onNext,
-  onPrevious
+  onPrevious,
+  onTrackChange
 }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
+
+  const {
+    queue,
+    currentIndex,
+    loopMode,
+    isShuffled,
+    setLoopMode,
+    goToNext,
+    goToPrevious,
+    playTrackAt,
+    removeFromQueue,
+    clearQueue,
+    moveTrack,
+  } = useQueue();
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -32,9 +51,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const handleDurationChange = () => setDuration(audio.duration);
     const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => {
-      // Auto-advance to next track when current track ends
-      if (onNext) {
-        onNext();
+      if (loopMode === 'one') {
+        audio.currentTime = 0;
+        audio.play();
+      } else {
+        // Check if there's a next track in queue
+        if (queue.length > 0 && (currentIndex < queue.length - 1 || loopMode === 'all')) {
+          goToNext();
+        } else if (onNext) {
+          onNext();
+        }
       }
     };
 
@@ -49,7 +75,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, onNext]);
+  }, [currentTrack, onNext, queue, currentIndex, loopMode, goToNext]);
+
+  // Update parent when queue track changes
+  useEffect(() => {
+    if (queue.length > 0 && queue[currentIndex] && onTrackChange) {
+      onTrackChange(queue[currentIndex]);
+    }
+  }, [queue, currentIndex, onTrackChange]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -84,6 +117,40 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     setVolume(value[0]);
   };
 
+  const handleNext = () => {
+    if (queue.length > 0) {
+      goToNext();
+    } else if (onNext) {
+      onNext();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (queue.length > 0) {
+      goToPrevious();
+    } else if (onPrevious) {
+      onPrevious();
+    }
+  };
+
+  const handleLoopToggle = () => {
+    const modes: LoopMode[] = ['none', 'all', 'one'];
+    const currentModeIndex = modes.indexOf(loopMode);
+    const nextMode = modes[(currentModeIndex + 1) % modes.length];
+    setLoopMode(nextMode);
+  };
+
+  const getLoopIcon = () => {
+    switch (loopMode) {
+      case 'one':
+        return <Repeat1 className="h-4 w-4" />;
+      case 'all':
+        return <Repeat className="h-4 w-4 text-purple-400" />;
+      default:
+        return <Repeat className="h-4 w-4" />;
+    }
+  };
+
   const formatTime = (time: number) => {
     if (isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
@@ -91,34 +158,54 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  if (!currentTrack) return null;
+  // Use queue track if available, otherwise use prop
+  const displayTrack = queue.length > 0 ? queue[currentIndex] : currentTrack;
+  
+  if (!displayTrack) return null;
 
   return (
     <>
       <audio
         ref={audioRef}
-        src={currentTrack.file_path}
+        src={displayTrack.file_path}
         preload="metadata"
       />
       <Card className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-white/10 p-4 z-40">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div className="flex-1 min-w-0">
-              <h4 className="text-white font-medium truncate">{currentTrack.title}</h4>
-              <p className="text-white/60 text-sm truncate">{currentTrack.categories?.name}</p>
+              <h4 className="text-white font-medium truncate">{displayTrack.title}</h4>
+              <p className="text-white/60 text-sm truncate">{displayTrack.categories?.name}</p>
             </div>
             
             <div className="flex items-center space-x-2">
-              {onPrevious && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onPrevious}
-                  className="text-white hover:bg-white/10"
-                >
-                  <SkipBack className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLoopToggle}
+                className={`text-white hover:bg-white/10 ${loopMode !== 'none' ? 'text-purple-400' : ''}`}
+              >
+                {getLoopIcon()}
+              </Button>
+
+              <QueueDrawer
+                queue={queue}
+                currentIndex={currentIndex}
+                onPlayTrack={playTrackAt}
+                onRemoveTrack={removeFromQueue}
+                onClearQueue={clearQueue}
+                onMoveTrack={moveTrack}
+              />
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePrevious}
+                className="text-white hover:bg-white/10"
+                disabled={queue.length === 0 && !onPrevious}
+              >
+                <SkipBack className="h-4 w-4" />
+              </Button>
               
               <Button
                 variant="ghost"
@@ -129,16 +216,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               
-              {onNext && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onNext}
-                  className="text-white hover:bg-white/10"
-                >
-                  <SkipForward className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleNext}
+                className="text-white hover:bg-white/10"
+                disabled={queue.length === 0 && !onNext}
+              >
+                <SkipForward className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           

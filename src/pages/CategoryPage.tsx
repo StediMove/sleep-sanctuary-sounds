@@ -7,6 +7,7 @@ import AudioPlayer from '@/components/audio/AudioPlayer';
 import FilterTags from '@/components/content/FilterTags';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useQueue } from '@/hooks/useQueue';
 import { 
   realCategories, 
   getTracksByCategory,
@@ -22,6 +23,12 @@ const CategoryPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const {
+    addToQueue,
+    playNext,
+    replaceQueue,
+  } = useQueue();
 
   const category = realCategories.find(cat => cat.id === categoryId);
   const allTracks = getTracksByCategory(categoryId || '').map(track => ({
@@ -85,6 +92,11 @@ const CategoryPage = () => {
     setSelectedTags([]);
   };
 
+  const handleTrackChange = (track: any) => {
+    setCurrentTrack(track);
+    setIsPlaying(true);
+  };
+
   // Update current track index when tracks change due to filtering
   useEffect(() => {
     if (currentTrack && filteredTracks.length > 0) {
@@ -146,6 +158,9 @@ const CategoryPage = () => {
               track={track}
               isPlaying={currentTrack?.id === track.id && isPlaying}
               onPlay={() => handlePlayTrack(track)}
+              onAddToQueue={addToQueue}
+              onPlayNext={playNext}
+              onReplaceQueue={replaceQueue}
             />
           ))}
         </div>
@@ -170,6 +185,7 @@ const CategoryPage = () => {
         onPlayPause={() => setIsPlaying(!isPlaying)}
         onNext={filteredTracks.length > 1 ? handleNext : undefined}
         onPrevious={filteredTracks.length > 1 ? handlePrevious : undefined}
+        onTrackChange={handleTrackChange}
       />
       
       {/* Bottom spacing for fixed player */}

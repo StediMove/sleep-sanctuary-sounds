@@ -2,7 +2,9 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, MoreVertical } from 'lucide-react';
+import TrackContextMenu from '@/components/audio/TrackContextMenu';
+import { QueueTrack } from '@/hooks/useQueue';
 
 interface TrackCardProps {
   track: {
@@ -15,13 +17,24 @@ interface TrackCardProps {
     thumbnail_url?: string;
     categories?: { name: string };
     category_id?: string;
+    file_path?: string;
   };
   isPlaying?: boolean;
   onPlay: () => void;
   onFavorite?: () => void;
+  onAddToQueue?: (track: QueueTrack) => void;
+  onPlayNext?: (track: QueueTrack) => void;
+  onReplaceQueue?: (track: QueueTrack) => void;
 }
 
-const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
+const TrackCard = ({ 
+  track, 
+  isPlaying, 
+  onPlay, 
+  onAddToQueue,
+  onPlayNext,
+  onReplaceQueue 
+}: TrackCardProps) => {
   // Category color mapping
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName?.toLowerCase()) {
@@ -38,86 +51,118 @@ const TrackCard = ({ track, isPlaying, onPlay }: TrackCardProps) => {
 
   const categoryColors = getCategoryColor(track.categories?.name || '');
 
+  const queueTrack: QueueTrack = {
+    id: track.id,
+    title: track.title,
+    description: track.description,
+    duration: track.duration,
+    is_premium: track.is_premium,
+    tags: track.tags,
+    thumbnail_url: track.thumbnail_url,
+    categories: track.categories,
+    category_id: track.category_id,
+    file_path: track.file_path || '',
+  };
+
   return (
-    <Card className="glass-card glass-card-hover group relative overflow-hidden h-48">
-      <CardContent className="p-6 h-full flex flex-col">
-        <div className="flex items-start space-x-6 flex-1">
-          {/* Enhanced Thumbnail */}
-          <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-              {track.thumbnail_url ? (
-                <img 
-                  src={track.thumbnail_url} 
-                  alt={track.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to icon if image fails to load
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.innerHTML = isPlaying 
-                      ? '<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
-                      : '<svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="m7 4 10 6L7 16V4z"/></svg>';
-                  }}
-                />
-              ) : (
-                isPlaying ? (
-                  <Pause className="h-8 w-8 text-white" />
+    <TrackContextMenu
+      track={queueTrack}
+      onAddToQueue={onAddToQueue || (() => {})}
+      onPlayNext={onPlayNext || (() => {})}
+      onReplaceQueue={onReplaceQueue || (() => {})}
+    >
+      <Card className="glass-card glass-card-hover group relative overflow-hidden h-48">
+        <CardContent className="p-6 h-full flex flex-col">
+          <div className="flex items-start space-x-6 flex-1">
+            {/* Enhanced Thumbnail */}
+            <div className="relative">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                {track.thumbnail_url ? (
+                  <img 
+                    src={track.thumbnail_url} 
+                    alt={track.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to icon if image fails to load
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerHTML = isPlaying 
+                        ? '<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
+                        : '<svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="m7 4 10 6L7 16V4z"/></svg>';
+                    }}
+                  />
                 ) : (
-                  <Play className="h-8 w-8 text-white ml-1" />
-                )
-              )}
-            </div>
-            {isPlaying && (
-              <div className="absolute inset-0 rounded-2xl border-2 border-white/50 animate-pulse" />
-            )}
-          </div>
-          
-          {/* Content */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
-            <div>
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-white font-medium text-lg truncate group-hover:text-white/90 transition-colors duration-300">
-                  {track.title}
-                </h3>
-                <Badge 
-                  variant="secondary" 
-                  className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1 ml-2`}
-                >
-                  {track.categories?.name || 'Unknown'}
-                </Badge>
+                  isPlaying ? (
+                    <Pause className="h-8 w-8 text-white" />
+                  ) : (
+                    <Play className="h-8 w-8 text-white ml-1" />
+                  )
+                )}
               </div>
-              
-              {track.description && (
-                <p className="text-white/70 text-sm mb-4 line-clamp-2 font-light leading-relaxed">
-                  {track.description}
-                </p>
+              {isPlaying && (
+                <div className="absolute inset-0 rounded-2xl border-2 border-white/50 animate-pulse" />
               )}
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onPlay}
-                  className={`${
-                    isPlaying 
-                      ? 'text-purple-400 bg-purple-400/10' 
-                      : 'text-white hover:text-purple-300'
-                  } hover:bg-white/10 rounded-xl px-4 py-2 font-medium button-pulse transition-all duration-300`}
-                >
-                  {isPlaying ? (
-                    <Pause className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Play className="h-4 w-4 mr-2 ml-0.5" />
-                  )}
-                  {isPlaying ? 'Playing' : 'Play'}
-                </Button>
+            {/* Content */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-white font-medium text-lg truncate group-hover:text-white/90 transition-colors duration-300">
+                    {track.title}
+                  </h3>
+                  <div className="flex items-center space-x-2 ml-2">
+                    <Badge 
+                      variant="secondary" 
+                      className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1`}
+                    >
+                      {track.categories?.name || 'Unknown'}
+                    </Badge>
+                    {(onAddToQueue || onPlayNext || onReplaceQueue) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-white/60 hover:text-white hover:bg-white/10 p-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {track.description && (
+                  <p className="text-white/70 text-sm mb-4 line-clamp-2 font-light leading-relaxed">
+                    {track.description}
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onPlay}
+                    className={`${
+                      isPlaying 
+                        ? 'text-purple-400 bg-purple-400/10' 
+                        : 'text-white hover:text-purple-300'
+                    } hover:bg-white/10 rounded-xl px-4 py-2 font-medium button-pulse transition-all duration-300`}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Play className="h-4 w-4 mr-2 ml-0.5" />
+                    )}
+                    {isPlaying ? 'Playing' : 'Play'}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TrackContextMenu>
   );
 };
 
