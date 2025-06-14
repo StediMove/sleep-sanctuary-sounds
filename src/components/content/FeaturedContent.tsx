@@ -69,7 +69,7 @@ const FeaturedContent = ({
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {tracks.map((track) => (
-            <CarouselItem key={track.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+            <CarouselItem key={track.id} className="pl-2 md:pl-4 basis-5/6 sm:basis-1/2 lg:basis-1/3">
               <div className="p-1">
                 <TrackCard
                   track={track}
@@ -99,17 +99,19 @@ const FeaturedContent = ({
 
   return (
     <Tabs defaultValue="trending" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 bg-transparent p-0 gap-2 mb-6">
-        {tabs.map(tab => (
-          <TabsTrigger
-            key={tab.value}
-            value={tab.value}
-            className="text-white/70 data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none rounded-lg"
-          >
-            {tab.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      <div className="overflow-x-auto pb-2 -mb-2">
+        <TabsList className="bg-transparent p-0 gap-2 mb-6 whitespace-nowrap">
+          {tabs.map(tab => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className="text-white/70 data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none rounded-lg"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
 
       {tabs.map(tab => (
         <TabsContent key={tab.value} value={tab.value}>
@@ -121,3 +123,4 @@ const FeaturedContent = ({
 }
 
 export default FeaturedContent
+

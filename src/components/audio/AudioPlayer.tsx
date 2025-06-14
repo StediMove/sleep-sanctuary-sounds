@@ -3,18 +3,56 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1 } from 'lucide-react';
 import { LoopMode } from '@/hooks/useQueue';
 import { useQueueContext } from '@/contexts/QueueContext';
 import QueueDrawer from './QueueDrawer';
 import { getTracksByCategory, realCategories } from '@/utils/audioContent';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
 interface AudioPlayerProps {
   currentTrack: any;
   isPlaying: boolean;
   onPlayPause: () => void;
 }
+
+const MarqueeTitle = ({ title }: { title: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (containerRef.current && textRef.current) {
+        setIsOverflowing(textRef.current.scrollWidth > containerRef.current.offsetWidth);
+      }
+    };
+    // Timeout to allow DOM to update with new title
+    const timer = setTimeout(checkOverflow, 100);
+    window.addEventListener('resize', checkOverflow);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [title]);
+
+  return (
+    <div ref={containerRef} className="relative overflow-hidden whitespace-nowrap h-6 flex items-center">
+      {/* This span is only for measuring, it's not visible */}
+      <span ref={textRef} className="text-white font-medium absolute invisible -z-10">{title}</span>
+      
+      {isOverflowing ? (
+        <div className="flex animate-marquee">
+          <span className="text-white font-medium pr-8">{title}</span>
+          <span className="text-white font-medium pr-8">{title}</span>
+        </div>
+      ) : (
+        <span className="text-white font-medium truncate">{title}</span>
+      )}
+    </div>
+  );
+};
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({
   currentTrack,
@@ -314,11 +352,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         ref={audioRef}
         preload="metadata"
       />
-      <Card className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-white/10 p-4 z-40">
+      <Card className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-white/10 p-2 sm:p-4 z-40">
         <div className="mx-auto w-full max-w-screen-2xl">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-2 sm:gap-4">
             <div className="flex-1 min-w-0">
-              <h4 className="text-white font-medium truncate">{currentTrack.title}</h4>
+              <MarqueeTitle title={currentTrack.title} />
               <div className="flex items-center space-x-2">
                 <p className="text-white/60 text-sm truncate">{currentTrack.categories?.name}</p>
                 {isSingleTrackMode && hasPausedQueue && (
@@ -339,10 +377,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-0 sm:space-x-1">
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={handleLoopToggle}
                 className={`text-white hover:bg-white/10 ${loopMode !== 'none' ? 'text-purple-400' : ''}`}
               >
@@ -361,43 +399,54 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 onReplaceQueue={replaceQueue}
               />
               
+              {!user && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePlayPause}
+                    className="text-white hover:bg-white/10"
+                  >
+                    {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                  </Button>
+              )}
+              
               {user && (
+                <>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={handlePrevious}
                   className="text-white hover:bg-white/10"
                   disabled={!canGoPrevious}
                 >
-                  <SkipBack className="h-4 w-4" />
+                  <SkipBack className="h-5 w-5" />
                 </Button>
-              )}
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handlePlayPause}
-                className="text-white hover:bg-white/10"
-              >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
-              
-              {user && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
+                  onClick={handlePlayPause}
+                  className="text-white hover:bg-white/10 w-12 h-12"
+                >
+                  {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                </Button>
+              
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleNext}
                   className="text-white hover:bg-white/10"
                   disabled={!canGoNext}
                 >
-                  <SkipForward className="h-4 w-4" />
+                  <SkipForward className="h-5 w-5" />
                 </Button>
+                </>
               )}
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <span className="text-white/60 text-sm min-w-[40px]">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <span className="text-white/60 text-xs sm:text-sm min-w-[35px] sm:min-w-[40px] text-center">
               {formatTime(currentTime)}
             </span>
             
@@ -411,7 +460,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               />
             </div>
             
-            <span className="text-white/60 text-sm min-w-[40px]">
+            <span className="text-white/60 text-xs sm:text-sm min-w-[35px] sm:min-w-[40px] text-center">
               {formatTime(duration)}
             </span>
             
@@ -435,3 +484,4 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
 };
 
 export default AudioPlayer;
+
