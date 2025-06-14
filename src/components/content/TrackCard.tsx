@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +80,7 @@ const TrackCard = ({
     >
       <CardContent className="p-6 h-full flex flex-col">
         <div className="flex items-start space-x-6 flex-1">
-          {/* Thumbnail and Category Badge */}
+          {/* Thumbnail and Play Button */}
           <div className="flex flex-col items-center space-y-2 w-20 shrink-0">
             {/* Enhanced Thumbnail */}
             <div className="relative">
@@ -112,23 +111,43 @@ const TrackCard = ({
               )}
             </div>
             
-            {/* Category Badge */}
-            <Badge 
-              variant="secondary" 
-              className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1 w-full text-center justify-center truncate`}
+            {/* Play Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlay();
+              }}
+              className={`${
+                isPlaying 
+                  ? 'text-purple-400 bg-purple-400/10' 
+                  : 'text-white/80 hover:text-white'
+              } hover:bg-white/10 rounded-lg font-medium button-pulse transition-all duration-300 text-xs w-full`}
             >
-              {track.categories?.name || 'Unknown'}
-            </Badge>
+              {isPlaying ? (
+                <Pause className="h-4 w-4 mr-1.5" />
+              ) : (
+                <Play className="h-4 w-4 mr-1.5" />
+              )}
+              {isPlaying ? 'Playing' : 'Play'}
+            </Button>
           </div>
           
           {/* Content */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+          <div className="flex-1 min-w-0 flex flex-col h-full">
             <div>
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3">
                 <h3 className="text-white font-medium text-lg truncate group-hover:text-white/90 transition-colors duration-300 w-full sm:w-auto sm:flex-1">
                   {track.title}
                 </h3>
                 <div className="flex items-center space-x-2 mt-2 sm:mt-0 sm:ml-2 shrink-0">
+                  <Badge 
+                    variant="secondary" 
+                    className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1`}
+                  >
+                    {track.categories?.name || 'Unknown'}
+                  </Badge>
                   {(onAddToQueue || onPlayNext || onReplaceQueue) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -178,31 +197,6 @@ const TrackCard = ({
                   {track.description}
                 </p>
               )}
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPlay();
-                  }}
-                  className={`${
-                    isPlaying 
-                      ? 'text-purple-400 bg-purple-400/10' 
-                      : 'text-white hover:text-purple-300'
-                  } hover:bg-white/10 rounded-xl px-4 py-2 font-medium button-pulse transition-all duration-300`}
-                >
-                  {isPlaying ? (
-                    <Pause className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Play className="h-4 w-4 mr-2 ml-0.5" />
-                  )}
-                  {isPlaying ? 'Playing' : 'Play'}
-                </Button>
-              </div>
             </div>
           </div>
         </div>
