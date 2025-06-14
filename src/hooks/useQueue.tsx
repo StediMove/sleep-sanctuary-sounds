@@ -23,6 +23,7 @@ export const useQueue = () => {
   const [originalQueue, setOriginalQueue] = useState<QueueTrack[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [pausedIndex, setPausedIndex] = useState(0);
+  const [isGlobalPlaying, setIsGlobalPlaying] = useState(false);
 
   const addToQueue = useCallback((track: QueueTrack) => {
     console.log('Adding track to queue:', track);
@@ -216,7 +217,9 @@ export const useQueue = () => {
     loopMode,
     isShuffled,
     isPaused,
+    isGlobalPlaying,
     setLoopMode,
+    setIsGlobalPlaying,
     addToQueue,
     playNext,
     replaceQueue,
