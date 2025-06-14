@@ -41,7 +41,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     removeFromQueue,
     clearQueue,
     moveTrack,
+    getNextTrack,
+    getPreviousTrack,
   } = useQueue();
+
+  // Use queue track if available, otherwise use prop
+  const displayTrack = queue.length > 0 ? queue[currentIndex] : currentTrack;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -51,14 +56,18 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const handleDurationChange = () => setDuration(audio.duration);
     const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => {
+      console.log('Track ended, checking for next track...');
       if (loopMode === 'one') {
         audio.currentTime = 0;
         audio.play();
       } else {
         // Check if there's a next track in queue
-        if (queue.length > 0 && (currentIndex < queue.length - 1 || loopMode === 'all')) {
+        const nextTrack = getNextTrack();
+        if (nextTrack) {
+          console.log('Moving to next track in queue:', nextTrack);
           goToNext();
         } else if (onNext) {
+          console.log('No next track in queue, calling onNext');
           onNext();
         }
       }
@@ -75,11 +84,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, onNext, queue, currentIndex, loopMode, goToNext]);
+  }, [displayTrack, onNext, queue, currentIndex, loopMode, goToNext, getNextTrack]);
 
   // Update parent when queue track changes
   useEffect(() => {
     if (queue.length > 0 && queue[currentIndex] && onTrackChange) {
+      console.log('Queue track changed, updating parent:', queue[currentIndex]);
       onTrackChange(queue[currentIndex]);
     }
   }, [queue, currentIndex, onTrackChange]);
@@ -96,7 +106,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     } else {
       audio.pause();
     }
-  }, [isPlaying, currentTrack]);
+  }, [isPlaying, displayTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -118,17 +128,33 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const handleNext = () => {
+    console.log('Next button clicked');
     if (queue.length > 0) {
-      goToNext();
+      const nextTrack = getNextTrack();
+      if (nextTrack) {
+        console.log('Moving to next track in queue');
+        goToNext();
+      } else {
+        console.log('No next track in queue');
+      }
     } else if (onNext) {
+      console.log('No queue, calling onNext');
       onNext();
     }
   };
 
   const handlePrevious = () => {
+    console.log('Previous button clicked');
     if (queue.length > 0) {
-      goToPrevious();
+      const prevTrack = getPreviousTrack();
+      if (prevTrack) {
+        console.log('Moving to previous track in queue');
+        goToPrevious();
+      } else {
+        console.log('No previous track in queue');
+      }
     } else if (onPrevious) {
+      console.log('No queue, calling onPrevious');
       onPrevious();
     }
   };
@@ -137,6 +163,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const modes: LoopMode[] = ['none', 'all', 'one'];
     const currentModeIndex = modes.indexOf(loopMode);
     const nextMode = modes[(currentModeIndex + 1) % modes.length];
+    console.log('Loop mode changed from', loopMode, 'to', nextMode);
     setLoopMode(nextMode);
   };
 
@@ -158,8 +185,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Use queue track if available, otherwise use prop
-  const displayTrack = queue.length > 0 ? queue[currentIndex] : currentTrack;
+  // Check if navigation buttons should be enabled
+  const canGoNext = queue.length > 0 ? getNextTrack() !== null : !!onNext;
+  const canGoPrevious = queue.length > 0 ? getPreviousTrack() !== null : !!onPrevious;
   
   if (!displayTrack) return null;
 
@@ -202,7 +230,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 size="sm"
                 onClick={handlePrevious}
                 className="text-white hover:bg-white/10"
-                disabled={queue.length === 0 && !onPrevious}
+                disabled={!canGoPrevious}
               >
                 <SkipBack className="h-4 w-4" />
               </Button>
@@ -221,7 +249,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 size="sm"
                 onClick={handleNext}
                 className="text-white hover:bg-white/10"
-                disabled={queue.length === 0 && !onNext}
+                disabled={!canGoNext}
               >
                 <SkipForward className="h-4 w-4" />
               </Button>

@@ -39,6 +39,8 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
 }) => {
   const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
 
+  console.log('QueueDrawer render:', { queueLength: queue.length, currentIndex, queue });
+
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
@@ -55,6 +57,16 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
       onMoveTrack(draggedIndex, dropIndex);
     }
     setDraggedIndex(null);
+  };
+
+  const handlePlayTrack = (index: number) => {
+    console.log('Playing track at index:', index);
+    onPlayTrack(index);
+  };
+
+  const handleRemoveTrack = (index: number) => {
+    console.log('Removing track at index:', index);
+    onRemoveTrack(index);
   };
 
   const formatTime = (duration?: number) => {
@@ -145,12 +157,14 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                         <h4 className={`font-medium truncate ${isCurrentTrack ? 'text-purple-300' : 'text-white'}`}>
                           {track.title}
                         </h4>
-                        <Badge 
-                          variant="secondary" 
-                          className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs`}
-                        >
-                          {track.categories?.name}
-                        </Badge>
+                        {track.categories?.name && (
+                          <Badge 
+                            variant="secondary" 
+                            className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs`}
+                          >
+                            {track.categories.name}
+                          </Badge>
+                        )}
                       </div>
                       {track.description && (
                         <p className="text-white/60 text-sm truncate">
@@ -169,7 +183,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onPlayTrack(index)}
+                        onClick={() => handlePlayTrack(index)}
                         className={`${isCurrentTrack ? 'text-purple-300' : 'text-white'} hover:bg-white/10`}
                       >
                         <Play className="h-4 w-4" />
@@ -178,7 +192,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onRemoveTrack(index)}
+                        onClick={() => handleRemoveTrack(index)}
                         className="text-red-400 hover:bg-red-400/10"
                       >
                         <X className="h-4 w-4" />
