@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -112,11 +113,11 @@ const TrackCard = ({
           {/* Content */}
           <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
             <div>
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-white font-medium text-lg truncate group-hover:text-white/90 transition-colors duration-300">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3">
+                <h3 className="text-white font-medium text-lg truncate group-hover:text-white/90 transition-colors duration-300 w-full sm:w-auto sm:flex-1">
                   {track.title}
                 </h3>
-                <div className="flex items-center space-x-2 ml-2">
+                <div className="flex items-center space-x-2 mt-2 sm:mt-0 sm:ml-2 shrink-0">
                   <Badge 
                     variant="secondary" 
                     className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1`}
