@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -14,6 +15,8 @@ interface AudioPlayerProps {
   onNext?: () => void;
   onPrevious?: () => void;
   onTrackChange?: (track: any) => void;
+  categoryTracks?: any[];
+  currentCategoryIndex?: number;
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({
@@ -22,7 +25,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   onPlayPause,
   onNext,
   onPrevious,
-  onTrackChange
+  onTrackChange,
+  categoryTracks = [],
+  currentCategoryIndex = -1
 }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -62,13 +67,28 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         audio.currentTime = 0;
         audio.play();
       } else {
-        // Check if there's a next track in queue
+        // First check if there's a next track in queue
         const nextTrack = getNextTrack();
         if (nextTrack) {
           console.log('Moving to next track in queue:', nextTrack);
           goToNext();
+        } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
+          // If no queue, try to play next track in category
+          const nextCategoryIndex = currentCategoryIndex + 1;
+          if (nextCategoryIndex < categoryTracks.length) {
+            console.log('Playing next track in category:', categoryTracks[nextCategoryIndex]);
+            if (onTrackChange) {
+              onTrackChange(categoryTracks[nextCategoryIndex]);
+            }
+          } else if (loopMode === 'all') {
+            // Loop back to first track in category
+            console.log('Looping back to first track in category');
+            if (onTrackChange) {
+              onTrackChange(categoryTracks[0]);
+            }
+          }
         } else if (onNext) {
-          console.log('No next track in queue, calling onNext');
+          console.log('No queue or category tracks, calling onNext');
           onNext();
         }
       }
@@ -85,7 +105,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [displayTrack, onNext, queue, currentIndex, loopMode, goToNext, getNextTrack]);
+  }, [displayTrack, onNext, onTrackChange, queue, currentIndex, loopMode, goToNext, getNextTrack, categoryTracks, currentCategoryIndex]);
 
   // Update parent when queue track changes
   useEffect(() => {
@@ -138,8 +158,22 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       } else {
         console.log('No next track in queue');
       }
+    } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
+      // Play next track in category
+      const nextCategoryIndex = currentCategoryIndex + 1;
+      if (nextCategoryIndex < categoryTracks.length) {
+        console.log('Playing next track in category');
+        if (onTrackChange) {
+          onTrackChange(categoryTracks[nextCategoryIndex]);
+        }
+      } else if (loopMode === 'all') {
+        // Loop back to first track
+        if (onTrackChange) {
+          onTrackChange(categoryTracks[0]);
+        }
+      }
     } else if (onNext) {
-      console.log('No queue, calling onNext');
+      console.log('No queue or category tracks, calling onNext');
       onNext();
     }
   };
@@ -154,8 +188,22 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       } else {
         console.log('No previous track in queue');
       }
+    } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
+      // Play previous track in category
+      const prevCategoryIndex = currentCategoryIndex - 1;
+      if (prevCategoryIndex >= 0) {
+        console.log('Playing previous track in category');
+        if (onTrackChange) {
+          onTrackChange(categoryTracks[prevCategoryIndex]);
+        }
+      } else if (loopMode === 'all') {
+        // Loop to last track
+        if (onTrackChange) {
+          onTrackChange(categoryTracks[categoryTracks.length - 1]);
+        }
+      }
     } else if (onPrevious) {
-      console.log('No queue, calling onPrevious');
+      console.log('No queue or category tracks, calling onPrevious');
       onPrevious();
     }
   };
@@ -187,8 +235,13 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   // Check if navigation buttons should be enabled
-  const canGoNext = queue.length > 0 ? getNextTrack() !== null : !!onNext;
-  const canGoPrevious = queue.length > 0 ? getPreviousTrack() !== null : !!onPrevious;
+  const canGoNext = queue.length > 0 
+    ? getNextTrack() !== null 
+    : (categoryTracks.length > 0 && currentCategoryIndex < categoryTracks.length - 1) || loopMode === 'all' || !!onNext;
+    
+  const canGoPrevious = queue.length > 0 
+    ? getPreviousTrack() !== null 
+    : (categoryTracks.length > 0 && currentCategoryIndex > 0) || loopMode === 'all' || !!onPrevious;
   
   if (!displayTrack) return null;
 

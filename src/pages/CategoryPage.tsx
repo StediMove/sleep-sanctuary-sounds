@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +21,7 @@ const CategoryPage = () => {
   const { user } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [currentCategoryTrack, setCurrentCategoryTrack] = useState<any>(null);
 
   const {
     currentTrack,
@@ -37,6 +39,14 @@ const CategoryPage = () => {
   const availableTags = getTagsByCategory(categoryId || '');
   const filteredTracks = filterTracksByTags(allTracks, selectedTags);
 
+  // Current track for category playback (either queue track or category track)
+  const displayTrack = currentTrack || currentCategoryTrack;
+  
+  // Find current track index in filtered tracks
+  const currentCategoryIndex = displayTrack 
+    ? filteredTracks.findIndex(track => track.id === displayTrack.id)
+    : -1;
+
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from category page:', track);
     const queueTrack = {
@@ -52,12 +62,19 @@ const CategoryPage = () => {
       file_path: track.file_path,
     };
     
-    if (currentTrack?.id === track.id) {
+    if (displayTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
-      replaceQueue(queueTrack);
+      // Clear any existing queue and set as category track
+      setCurrentCategoryTrack(track);
       setIsPlaying(true);
     }
+  };
+
+  const handleTrackChange = (newTrack: any) => {
+    console.log('Track changed to:', newTrack);
+    setCurrentCategoryTrack(newTrack);
+    setIsPlaying(true);
   };
 
   const handleTagToggle = (tag: string) => {
@@ -116,7 +133,7 @@ const CategoryPage = () => {
             <TrackCard
               key={track.id}
               track={track}
-              isPlaying={currentTrack?.id === track.id && isPlaying}
+              isPlaying={displayTrack?.id === track.id && isPlaying}
               onPlay={() => handlePlayTrack(track)}
               onAddToQueue={addToQueue}
               onPlayNext={playNext}
@@ -140,9 +157,12 @@ const CategoryPage = () => {
 
       {/* Audio Player */}
       <AudioPlayer
-        currentTrack={currentTrack}
+        currentTrack={displayTrack}
         isPlaying={isPlaying}
         onPlayPause={() => setIsPlaying(!isPlaying)}
+        onTrackChange={handleTrackChange}
+        categoryTracks={filteredTracks}
+        currentCategoryIndex={currentCategoryIndex}
       />
       
       {/* Bottom spacing for fixed player */}

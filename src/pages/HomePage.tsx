@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import CategoryCard from '@/components/content/CategoryCard';
@@ -24,6 +25,7 @@ const HomePage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentHomeTrack, setCurrentHomeTrack] = useState<any>(null);
 
   const {
     currentTrack,
@@ -48,6 +50,14 @@ const HomePage = () => {
       }))
     : sampleTracks;
 
+  // Current track for home playback (either queue track or home track)
+  const displayTrack = currentTrack || currentHomeTrack;
+  
+  // Find current track index in featured tracks
+  const currentHomeIndex = displayTrack 
+    ? featuredTracks.findIndex(track => track.id === displayTrack.id)
+    : -1;
+
   const handlePlayTrack = (track: any) => {
     console.log('Playing track:', track);
     const queueTrack = {
@@ -63,7 +73,18 @@ const HomePage = () => {
       file_path: track.file_path,
     };
     
-    replaceQueue(queueTrack);
+    if (displayTrack?.id === track.id) {
+      setIsPlaying(!isPlaying);
+    } else {
+      // Set as home track for category-like playback
+      setCurrentHomeTrack(track);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleTrackChange = (newTrack: any) => {
+    console.log('Home track changed to:', newTrack);
+    setCurrentHomeTrack(newTrack);
     setIsPlaying(true);
   };
 
@@ -165,7 +186,7 @@ const HomePage = () => {
             >
               <TrackCard
                 track={track}
-                isPlaying={currentTrack?.id === track.id && isPlaying}
+                isPlaying={displayTrack?.id === track.id && isPlaying}
                 onPlay={() => handlePlayTrack(track)}
                 onAddToQueue={addToQueue}
                 onPlayNext={playNext}
@@ -213,9 +234,12 @@ const HomePage = () => {
 
       {/* Audio Player */}
       <AudioPlayer
-        currentTrack={currentTrack}
+        currentTrack={displayTrack}
         isPlaying={isPlaying}
         onPlayPause={() => setIsPlaying(!isPlaying)}
+        onTrackChange={handleTrackChange}
+        categoryTracks={featuredTracks}
+        currentCategoryIndex={currentHomeIndex}
       />
       
       {/* Bottom spacing for fixed player */}
