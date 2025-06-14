@@ -1,3 +1,4 @@
+
 // Real audio content based on the files uploaded to GitHub
 export const realAudioContent = [
   // Bedtime Stories
@@ -29,6 +30,7 @@ export const realAudioContent = [
     description: 'A heartwarming story about a little cloud and her journey through the sky.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/Cleo the Little Cloud.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400',
     duration: 480, // 8:00 minutes
     is_premium: true,
     tags: ['fantasy', 'sky', 'adventure']
@@ -50,6 +52,7 @@ export const realAudioContent = [
     description: 'Join Tilly on her magical moonlight adventure.',
     category: 'bedtime-stories',
     file_path: '/audio/bedtime-stories/Tilly the Turtle\'s Moonlight Journey.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400',
     duration: 420, // 7:00 minutes
     is_premium: true,
     tags: ['animals', 'moonlight', 'journey']
@@ -61,6 +64,7 @@ export const realAudioContent = [
     description: 'Cozy crackling fireplace sounds to warm your heart and calm your mind.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Fireplace sounds.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400',
     duration: 1800, // 30:00 minutes
     is_premium: false,
     tags: ['indoor', 'cozy', 'warm']
@@ -71,6 +75,7 @@ export const realAudioContent = [
     description: 'Natural forest ambience with birds chirping and leaves rustling.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Forest sounds.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400',
     duration: 1200, // 20:00 minutes
     is_premium: true,
     tags: ['nature', 'birds', 'outdoor']
@@ -81,6 +86,7 @@ export const realAudioContent = [
     description: 'Soft rainfall sounds perfect for relaxation and sleep.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Gentle rain.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400',
     duration: 1500, // 25:00 minutes
     is_premium: true,
     tags: ['weather', 'rain', 'nature']
@@ -91,6 +97,7 @@ export const realAudioContent = [
     description: 'Peaceful nighttime ambience from a quiet village.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Night sounds at a village.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400',
     duration: 1800, // 30:00 minutes
     is_premium: true,
     tags: ['night', 'village', 'ambient']
@@ -101,6 +108,7 @@ export const realAudioContent = [
     description: 'Relaxing ocean waves for deep relaxation and meditation.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Ocean sounds.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400',
     duration: 2000, // 33:20 minutes
     is_premium: true,
     tags: ['water', 'ocean', 'waves']
@@ -111,6 +119,7 @@ export const realAudioContent = [
     description: 'Gentle flowing water sounds for tranquility and peace.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Running water.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400',
     duration: 1200, // 20:00 minutes
     is_premium: true,
     tags: ['water', 'stream', 'nature']
@@ -121,6 +130,7 @@ export const realAudioContent = [
     description: 'Rhythmic sea waves for relaxation and stress relief.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Sea waves.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400',
     duration: 1800, // 30:00 minutes
     is_premium: true,
     tags: ['water', 'ocean', 'waves']
@@ -131,6 +141,7 @@ export const realAudioContent = [
     description: 'Powerful yet soothing waterfall sounds for deep relaxation.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Waterfall sounds.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400',
     duration: 1600, // 26:40 minutes
     is_premium: true,
     tags: ['water', 'waterfall', 'nature']
@@ -141,6 +152,7 @@ export const realAudioContent = [
     description: 'Natural waterfall ambience for meditation and calm.',
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Waterfall.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400',
     duration: 1400, // 23:20 minutes
     is_premium: true,
     tags: ['water', 'waterfall', 'nature']
@@ -152,6 +164,7 @@ export const realAudioContent = [
     description: 'Crystal-clear meditation music for spiritual awakening and inner peace.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music crystal.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400',
     duration: 900, // 15:00 minutes
     is_premium: false,
     tags: ['spiritual', 'healing', 'crystal']
@@ -162,6 +175,7 @@ export const realAudioContent = [
     description: 'Peaceful meditation music designed for immediate relaxation.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music rest now.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400',
     duration: 1200, // 20:00 minutes
     is_premium: true,
     tags: ['relaxation', 'peaceful', 'immediate']
@@ -172,6 +186,7 @@ export const realAudioContent = [
     description: 'Warm meditation music inspired by beautiful sunsets.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music sunset.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400',
     duration: 1000, // 16:40 minutes
     is_premium: true,
     tags: ['warm', 'sunset', 'inspiring']
@@ -182,6 +197,7 @@ export const realAudioContent = [
     description: 'Specially composed music to help you drift into peaceful sleep.',
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Relaxing Sleep Music.mp3',
+    thumbnail_url: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400',
     duration: 1800, // 30:00 minutes
     is_premium: true,
     tags: ['sleep', 'peaceful', 'composed']
