@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -8,6 +7,7 @@ import { LoopMode } from '@/hooks/useQueue';
 import { useQueueContext } from '@/contexts/QueueContext';
 import QueueDrawer from './QueueDrawer';
 import { getTracksByCategory, realCategories } from '@/utils/audioContent';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AudioPlayerProps {
   currentTrack: any;
@@ -25,6 +25,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [lastTrackId, setLastTrackId] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const {
     queue,
@@ -103,7 +104,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           // Queue finished - play random track and clear queue
           console.log('Queue finished, playing random track from same category');
           const lastQueueTrack = queue[queue.length - 1];
-          if (lastQueueTrack?.category_id) {
+          if (user && lastQueueTrack?.category_id) {
             const randomTrack = getRandomTrackFromCategory(lastQueueTrack.category_id, lastQueueTrack.id);
             if (randomTrack) {
               console.log('Playing random track from category:', randomTrack.title);
@@ -111,7 +112,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
             }
           }
         }
-      } else if (isSingleTrackMode && currentTrack?.category_id) {
+      } else if (user && isSingleTrackMode && currentTrack?.category_id) {
         // Single track ended - play another from same category
         console.log('Single track ended, playing random track from same category');
         const randomTrack = getRandomTrackFromCategory(currentTrack.category_id, currentTrack.id);
@@ -133,7 +134,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue, playSingleTrackAndClearQueue]);
+  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue, playSingleTrackAndClearQueue, user]);
 
   // Handle audio source changes
   useEffect(() => {
@@ -359,15 +360,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 onReplaceQueue={replaceQueue}
               />
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handlePrevious}
-                className="text-white hover:bg-white/10"
-                disabled={!canGoPrevious}
-              >
-                <SkipBack className="h-4 w-4" />
-              </Button>
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePrevious}
+                  className="text-white hover:bg-white/10"
+                  disabled={!canGoPrevious}
+                >
+                  <SkipBack className="h-4 w-4" />
+                </Button>
+              )}
               
               <Button
                 variant="ghost"
@@ -378,15 +381,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleNext}
-                className="text-white hover:bg-white/10"
-                disabled={!canGoNext}
-              >
-                <SkipForward className="h-4 w-4" />
-              </Button>
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNext}
+                  className="text-white hover:bg-white/10"
+                  disabled={!canGoNext}
+                >
+                  <SkipForward className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           
