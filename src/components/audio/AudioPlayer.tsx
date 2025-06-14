@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -6,6 +7,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle }
 import { LoopMode } from '@/hooks/useQueue';
 import { useQueueContext } from '@/contexts/QueueContext';
 import QueueDrawer from './QueueDrawer';
+import { getTracksByCategory } from '@/utils/audioContent';
 
 interface AudioPlayerProps {
   currentTrack: any;
@@ -29,9 +31,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     currentIndex,
     loopMode,
     isShuffled,
-    isPaused,
-    pausedTrack,
+    isSingleTrackMode,
     hasActiveQueue,
+    hasPausedQueue,
     setLoopMode,
     addToQueue,
     playNext,
@@ -39,7 +41,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     removeFromQueue,
     clearQueue,
     moveTrack,
-    pauseQueue,
     resumeQueue,
     getNextTrack,
     getPreviousTrack,
@@ -50,9 +51,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   console.log('AudioPlayer render:', {
     hasActiveQueue,
+    isSingleTrackMode,
     currentTrack: currentTrack?.title,
-    isPaused,
-    pausedTrack: pausedTrack?.title,
+    hasPausedQueue,
     queueLength: queue.length
   });
 
@@ -72,18 +73,20 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         return;
       }
 
-      // If we have an active queue
+      // If we have an active queue, try to go to next
       if (hasActiveQueue) {
         const nextTrack = getNextTrack();
         if (nextTrack) {
           console.log('Moving to next track in queue:', nextTrack);
           goToNext();
-        } else if (loopMode === 'all' && queue.length > 0) {
-          console.log('Looping back to start of queue');
-          goToNext();
         } else {
-          console.log('Queue finished');
+          console.log('Queue finished, trying category tracks');
+          handleQueueFinished();
         }
+      } else if (isSingleTrackMode) {
+        // If in single track mode, try to play from same category
+        console.log('Single track ended, trying category tracks');
+        handleSingleTrackFinished();
       }
     };
 
@@ -98,9 +101,43 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, loopMode, hasActiveQueue, goToNext, getNextTrack, queue.length]);
+  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue.length]);
 
-  // Handle audio source changes without restarting if same track
+  const handleQueueFinished = () => {
+    // When queue finishes, play a random track from the last track's category
+    if (currentTrack?.category_id) {
+      const categoryTracks = getTracksByCategory(currentTrack.category_id);
+      const otherTracks = categoryTracks.filter(t => t.id !== currentTrack.id);
+      if (otherTracks.length > 0) {
+        const randomTrack = otherTracks[Math.floor(Math.random() * otherTracks.length)];
+        console.log('Playing random track from category:', randomTrack.title);
+        replaceQueue({
+          ...randomTrack,
+          file_path: randomTrack.file_path || '',
+          categories: { name: currentTrack.categories?.name || 'Unknown' }
+        });
+      }
+    }
+  };
+
+  const handleSingleTrackFinished = () => {
+    // When single track finishes, play another from same category
+    if (currentTrack?.category_id) {
+      const categoryTracks = getTracksByCategory(currentTrack.category_id);
+      const otherTracks = categoryTracks.filter(t => t.id !== currentTrack.id);
+      if (otherTracks.length > 0) {
+        const randomTrack = otherTracks[Math.floor(Math.random() * otherTracks.length)];
+        console.log('Playing random track from category:', randomTrack.title);
+        replaceQueue({
+          ...randomTrack,
+          file_path: randomTrack.file_path || '',
+          categories: { name: currentTrack.categories?.name || 'Unknown' }
+        });
+      }
+    }
+  };
+
+  // Handle audio source changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
@@ -169,13 +206,23 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         console.log('Looping back to start of queue');
         goToNext();
         return;
+      } else {
+        // Queue finished, play random from category
+        handleQueueFinished();
+        return;
       }
     }
 
     // If there's a paused queue, resume it
-    if (isPaused && pausedTrack) {
+    if (hasPausedQueue) {
       console.log('Resuming paused queue');
       resumeQueue();
+      return;
+    }
+
+    // If in single track mode, try category tracks
+    if (isSingleTrackMode) {
+      handleSingleTrackFinished();
       return;
     }
 
@@ -196,7 +243,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }
 
     // If there's a paused queue, resume it
-    if (isPaused && pausedTrack) {
+    if (hasPausedQueue) {
       console.log('Resuming paused queue');
       resumeQueue();
       return;
@@ -232,8 +279,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   // Navigation buttons logic
-  const canGoNext = hasActiveQueue || (isPaused && pausedTrack);
-  const canGoPrevious = hasActiveQueue || (isPaused && pausedTrack);
+  const canGoNext = hasActiveQueue || hasPausedQueue || isSingleTrackMode;
+  const canGoPrevious = hasActiveQueue || hasPausedQueue;
 
   if (!currentTrack) return null;
 
@@ -250,7 +297,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               <h4 className="text-white font-medium truncate">{currentTrack.title}</h4>
               <div className="flex items-center space-x-2">
                 <p className="text-white/60 text-sm truncate">{currentTrack.categories?.name}</p>
-                {isPaused && pausedTrack && (
+                {isSingleTrackMode && hasPausedQueue && (
                   <span className="text-yellow-400 text-xs bg-yellow-400/10 px-2 py-1 rounded">
                     Queue Paused
                   </span>
@@ -258,6 +305,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 {hasActiveQueue && (
                   <span className="text-green-400 text-xs bg-green-400/10 px-2 py-1 rounded">
                     Queue Active
+                  </span>
+                )}
+                {isSingleTrackMode && !hasPausedQueue && (
+                  <span className="text-blue-400 text-xs bg-blue-400/10 px-2 py-1 rounded">
+                    Single Track
                   </span>
                 )}
               </div>

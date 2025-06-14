@@ -22,17 +22,14 @@ const HomePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [currentHomeTrack, setCurrentHomeTrack] = useState<any>(null);
 
   const {
     currentTrack,
     isGlobalPlaying,
     setIsGlobalPlaying,
-    hasActiveQueue,
     addToQueue,
     playNext,
     replaceQueue,
-    pauseQueue,
   } = useQueueContext();
 
   // Use real categories data
@@ -54,22 +51,13 @@ const HomePage = () => {
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from home page:', track);
     
-    // Set as current home track
-    setCurrentHomeTrack(track);
-    
     // Check if this track is already playing
     if (currentTrack?.id === track.id && isGlobalPlaying) {
-      console.log('Track already playing, just updating home state');
+      console.log('Track already playing');
       return;
     }
     
-    // If we have an active queue, pause it and play this track
-    if (hasActiveQueue) {
-      console.log('Pausing active queue to play home track');
-      pauseQueue();
-    }
-    
-    // Replace queue with new track
+    // Play as single track (will pause queue if active)
     replaceQueue({
       id: track.id,
       title: track.title,
@@ -79,16 +67,11 @@ const HomePage = () => {
       tags: track.tags,
       thumbnail_url: track.thumbnail_url,
       categories: track.categories,
-      category_id: track.category_id,
+      category_id: track.category,
       file_path: track.file_path || '',
     });
     
     setIsGlobalPlaying(true);
-  };
-
-  const handleTrackChange = (track: any) => {
-    console.log('Track changed in home page:', track);
-    setCurrentHomeTrack(track);
   };
 
   const handleCategoryClick = (categoryId: string) => {
@@ -102,17 +85,6 @@ const HomePage = () => {
       navigate(`/category/${categoryId}`);
     }
   };
-
-  // Initialize current track if we have one playing
-  useEffect(() => {
-    if (currentTrack && !hasActiveQueue && !currentHomeTrack) {
-      console.log('Setting current home track from global state');
-      setCurrentHomeTrack(currentTrack);
-    }
-  }, [currentTrack, currentHomeTrack, hasActiveQueue]);
-
-  // Use home track if no active queue, otherwise use current track
-  const displayTrack = !hasActiveQueue && currentHomeTrack ? currentHomeTrack : currentTrack;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-deep via-slate-900 to-navy-deep relative overflow-hidden">
@@ -200,7 +172,7 @@ const HomePage = () => {
             >
               <TrackCard
                 track={track}
-                isPlaying={displayTrack?.id === track.id && isGlobalPlaying}
+                isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
                 onPlay={() => handlePlayTrack(track)}
                 onAddToQueue={addToQueue}
                 onPlayNext={playNext}

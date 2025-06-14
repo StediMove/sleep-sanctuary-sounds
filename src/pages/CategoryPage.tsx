@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import TrackCard from '@/components/content/TrackCard';
-import AudioPlayer from '@/components/audio/AudioPlayer';
 import FilterTags from '@/components/content/FilterTags';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -19,18 +19,14 @@ const CategoryPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [currentCategoryTrack, setCurrentCategoryTrack] = useState<any>(null);
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(-1);
 
   const {
     currentTrack,
     isGlobalPlaying,
     setIsGlobalPlaying,
-    hasActiveQueue,
     addToQueue,
     playNext,
     replaceQueue,
-    pauseQueue,
   } = useQueueContext();
 
   const category = realCategories.find(cat => cat.id === categoryId);
@@ -45,24 +41,13 @@ const CategoryPage = () => {
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from category page:', track);
     
-    // Set as current category track
-    setCurrentCategoryTrack(track);
-    const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
-    setCurrentCategoryIndex(trackIndex);
-    
     // Check if this track is already playing
     if (currentTrack?.id === track.id && isGlobalPlaying) {
-      console.log('Track already playing, just updating category state');
+      console.log('Track already playing');
       return;
     }
     
-    // If we have an active queue, pause it and play this track
-    if (hasActiveQueue) {
-      console.log('Pausing active queue to play category track');
-      pauseQueue();
-    }
-    
-    // Replace queue with new track
+    // Play as single track (will pause queue if active)
     replaceQueue({
       id: track.id,
       title: track.title,
@@ -79,13 +64,6 @@ const CategoryPage = () => {
     setIsGlobalPlaying(true);
   };
 
-  const handleTrackChange = (track: any) => {
-    console.log('Track changed in category page:', track);
-    setCurrentCategoryTrack(track);
-    const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
-    setCurrentCategoryIndex(trackIndex);
-  };
-
   const handleTagToggle = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) 
@@ -98,18 +76,6 @@ const CategoryPage = () => {
     setSelectedTags([]);
   };
 
-  // Initialize current track if we have one playing
-  useEffect(() => {
-    if (currentTrack && !hasActiveQueue) {
-      const trackIndex = allTracks.findIndex(t => t.id === currentTrack.id);
-      if (trackIndex >= 0 && !currentCategoryTrack) {
-        console.log('Setting current category track from global state');
-        setCurrentCategoryTrack(currentTrack);
-        setCurrentCategoryIndex(trackIndex);
-      }
-    }
-  }, [currentTrack, allTracks, currentCategoryTrack, hasActiveQueue]);
-
   if (!category) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -120,9 +86,6 @@ const CategoryPage = () => {
       </div>
     );
   }
-
-  // Use category track if no active queue, otherwise use current track
-  const displayTrack = !hasActiveQueue && currentCategoryTrack ? currentCategoryTrack : currentTrack;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -157,7 +120,7 @@ const CategoryPage = () => {
             <TrackCard
               key={track.id}
               track={track}
-              isPlaying={displayTrack?.id === track.id && isGlobalPlaying}
+              isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
               onPlay={() => handlePlayTrack(track)}
               onAddToQueue={addToQueue}
               onPlayNext={playNext}
