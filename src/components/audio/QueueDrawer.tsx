@@ -194,6 +194,10 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                           variant="ghost"
                           size="sm"
                           className="text-white hover:bg-white/10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
                         >
                           <MoreVertical className="h-4 w-4" />
                         </Button>

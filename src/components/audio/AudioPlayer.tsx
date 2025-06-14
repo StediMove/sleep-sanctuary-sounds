@@ -33,7 +33,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
-  const [globalIsPlaying, setGlobalIsPlaying] = useState(false);
 
   const {
     queue,
@@ -133,15 +132,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }
   }, [queueCurrentTrack, isPaused, onTrackChange]);
 
-  // Handle global play state - prioritize queue state when active
+  // Handle audio playback - use isPlaying for all cases now
   useEffect(() => {
-    const shouldPlay = isQueueActive ? globalIsPlaying : isPlaying;
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log('Audio play state effect:', { shouldPlay, isQueueActive, globalIsPlaying, isPlaying });
+    console.log('Audio play state effect:', { isPlaying, displayTrack: displayTrack?.title });
 
-    if (shouldPlay) {
+    if (isPlaying) {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(console.error);
@@ -149,7 +147,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     } else {
       audio.pause();
     }
-  }, [globalIsPlaying, isPlaying, isQueueActive, displayTrack]);
+  }, [isPlaying, displayTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -172,13 +170,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   const handlePlayPause = () => {
     console.log('Play/Pause button clicked');
-    if (isQueueActive) {
-      // If queue is active, control global state
-      setGlobalIsPlaying(!globalIsPlaying);
-    } else {
-      // If no queue, use parent's play/pause
-      onPlayPause();
-    }
+    onPlayPause();
   };
 
   const handleNext = () => {
@@ -188,7 +180,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     if (isPaused) {
       console.log('Resuming queue');
       resumeQueue();
-      setGlobalIsPlaying(true);
       return;
     }
 
@@ -235,7 +226,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     if (isPaused) {
       console.log('Resuming queue');
       resumeQueue();
-      setGlobalIsPlaying(true);
       return;
     }
 
@@ -288,9 +278,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
-
-  // Determine the actual playing state to show in UI
-  const actualIsPlaying = isQueueActive ? globalIsPlaying : isPlaying;
 
   // Navigation buttons should always be enabled when we have content
   const canGoNext = isPaused || queue.length > 0 || categoryTracks.length > 0 || !!onNext;
@@ -357,7 +344,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 onClick={handlePlayPause}
                 className="text-white hover:bg-white/10"
               >
-                {actualIsPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               
               <Button
