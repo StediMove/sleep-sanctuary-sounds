@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -101,11 +102,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         console.log('Moving to next track in queue:', nextTrack);
         goToNext();
       } else {
-        // Queue finished, play random track from category
+        // Queue finished - play random track from category
         console.log('Queue finished, playing random track from category');
         const randomTrack = getRandomCategoryTrack();
         if (randomTrack && onTrackChange) {
-          console.log('Playing random category track:', randomTrack);
+          console.log('Playing random category track after queue end:', randomTrack);
           onTrackChange(randomTrack);
         }
       }
@@ -180,21 +181,30 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       return;
     }
 
-    // If we have a queue and we're not at the end, try to go to next track
-    if (queue.length > 0 && !isAtEndOfQueue()) {
+    // If we have a queue, check for next track
+    if (queue.length > 0) {
       const nextTrack = getNextTrack();
       if (nextTrack) {
         console.log('Moving to next track in queue');
         goToNext();
         return;
+      } else {
+        // At end of queue - play random track from category
+        console.log('At end of queue, playing random track from category');
+        const randomTrack = getRandomCategoryTrack();
+        if (randomTrack && onTrackChange) {
+          console.log('Playing random category track (end of queue):', randomTrack);
+          onTrackChange(randomTrack);
+          return;
+        }
       }
     }
 
-    // If we're at the end of queue or no queue, play random track from category
+    // If no queue or queue is empty, play random track from category
     if (categoryTracks.length > 0) {
       const randomTrack = getRandomCategoryTrack();
       if (randomTrack && onTrackChange) {
-        console.log('Playing random category track (queue finished or empty)');
+        console.log('Playing random category track (no queue)');
         onTrackChange(randomTrack);
         return;
       }
