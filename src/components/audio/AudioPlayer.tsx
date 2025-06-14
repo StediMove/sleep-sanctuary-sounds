@@ -57,6 +57,24 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     queueLength: queue.length
   });
 
+  const getRandomTrackFromCategory = (categoryId: string, excludeTrackId?: string) => {
+    const categoryTracks = getTracksByCategory(categoryId);
+    const availableTracks = excludeTrackId 
+      ? categoryTracks.filter(t => t.id !== excludeTrackId)
+      : categoryTracks;
+    
+    if (availableTracks.length > 0) {
+      const randomTrack = availableTracks[Math.floor(Math.random() * availableTracks.length)];
+      return {
+        ...randomTrack,
+        file_path: randomTrack.file_path || '',
+        categories: { name: getTracksByCategory(categoryId)[0]?.category || 'Unknown' },
+        category_id: categoryId
+      };
+    }
+    return null;
+  };
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -80,13 +98,25 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           console.log('Moving to next track in queue:', nextTrack);
           goToNext();
         } else {
-          console.log('Queue finished, trying category tracks');
-          handleQueueFinished();
+          // Queue finished - play random track from same category as last queue track
+          console.log('Queue finished, playing random track from same category');
+          const lastQueueTrack = queue[queue.length - 1];
+          if (lastQueueTrack?.category_id) {
+            const randomTrack = getRandomTrackFromCategory(lastQueueTrack.category_id, lastQueueTrack.id);
+            if (randomTrack) {
+              console.log('Playing random track from category:', randomTrack.title);
+              replaceQueue(randomTrack);
+            }
+          }
         }
-      } else if (isSingleTrackMode) {
-        // If in single track mode, try to play from same category
-        console.log('Single track ended, trying category tracks');
-        handleSingleTrackFinished();
+      } else if (isSingleTrackMode && currentTrack?.category_id) {
+        // Single track ended - play another from same category
+        console.log('Single track ended, playing random track from same category');
+        const randomTrack = getRandomTrackFromCategory(currentTrack.category_id, currentTrack.id);
+        if (randomTrack) {
+          console.log('Playing random track from category:', randomTrack.title);
+          replaceQueue(randomTrack);
+        }
       }
     };
 
@@ -101,41 +131,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue.length]);
-
-  const handleQueueFinished = () => {
-    // When queue finishes, play a random track from the last track's category
-    if (currentTrack?.category_id) {
-      const categoryTracks = getTracksByCategory(currentTrack.category_id);
-      const otherTracks = categoryTracks.filter(t => t.id !== currentTrack.id);
-      if (otherTracks.length > 0) {
-        const randomTrack = otherTracks[Math.floor(Math.random() * otherTracks.length)];
-        console.log('Playing random track from category:', randomTrack.title);
-        replaceQueue({
-          ...randomTrack,
-          file_path: randomTrack.file_path || '',
-          categories: { name: currentTrack.categories?.name || 'Unknown' }
-        });
-      }
-    }
-  };
-
-  const handleSingleTrackFinished = () => {
-    // When single track finishes, play another from same category
-    if (currentTrack?.category_id) {
-      const categoryTracks = getTracksByCategory(currentTrack.category_id);
-      const otherTracks = categoryTracks.filter(t => t.id !== currentTrack.id);
-      if (otherTracks.length > 0) {
-        const randomTrack = otherTracks[Math.floor(Math.random() * otherTracks.length)];
-        console.log('Playing random track from category:', randomTrack.title);
-        replaceQueue({
-          ...randomTrack,
-          file_path: randomTrack.file_path || '',
-          categories: { name: currentTrack.categories?.name || 'Unknown' }
-        });
-      }
-    }
-  };
+  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue]);
 
   // Handle audio source changes
   useEffect(() => {
@@ -207,9 +203,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         goToNext();
         return;
       } else {
-        // Queue finished, play random from category
-        handleQueueFinished();
-        return;
+        // Queue finished - play random track from same category as last queue track
+        console.log('Queue finished, playing random from last track category');
+        const lastQueueTrack = queue[queue.length - 1];
+        if (lastQueueTrack?.category_id) {
+          const randomTrack = getRandomTrackFromCategory(lastQueueTrack.category_id, lastQueueTrack.id);
+          if (randomTrack) {
+            console.log('Playing random track from category:', randomTrack.title);
+            replaceQueue(randomTrack);
+            return;
+          }
+        }
       }
     }
 
@@ -220,10 +224,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       return;
     }
 
-    // If in single track mode, try category tracks
-    if (isSingleTrackMode) {
-      handleSingleTrackFinished();
-      return;
+    // If in single track mode, play another from same category
+    if (isSingleTrackMode && currentTrack?.category_id) {
+      console.log('Single track mode - playing random from same category');
+      const randomTrack = getRandomTrackFromCategory(currentTrack.category_id, currentTrack.id);
+      if (randomTrack) {
+        console.log('Playing random track from category:', randomTrack.title);
+        replaceQueue(randomTrack);
+        return;
+      }
     }
 
     console.log('No next track available');
@@ -247,6 +256,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       console.log('Resuming paused queue');
       resumeQueue();
       return;
+    }
+
+    // If in single track mode, play another from same category
+    if (isSingleTrackMode && currentTrack?.category_id) {
+      console.log('Single track mode - playing random from same category');
+      const randomTrack = getRandomTrackFromCategory(currentTrack.category_id, currentTrack.id);
+      if (randomTrack) {
+        console.log('Playing random track from category:', randomTrack.title);
+        replaceQueue(randomTrack);
+        return;
+      }
     }
 
     console.log('No previous track available');
@@ -278,9 +298,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Navigation buttons logic
-  const canGoNext = hasActiveQueue || hasPausedQueue || isSingleTrackMode;
-  const canGoPrevious = hasActiveQueue || hasPausedQueue;
+  // Navigation buttons logic - next/previous should always be available
+  const canGoNext = true; // Always allow next (will find track from category)
+  const canGoPrevious = hasActiveQueue || hasPausedQueue || isSingleTrackMode;
 
   if (!currentTrack) return null;
 

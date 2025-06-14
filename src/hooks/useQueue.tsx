@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 
 export type QueueTrack = {
@@ -67,14 +68,14 @@ export const useQueue = () => {
     // If we have an active queue, pause it
     if (queue.length > 0 && !isSingleTrackMode) {
       console.log('Pausing current queue to play single track');
-      setPausedQueue([...queue]);
+      setPausedQueue([...queue]); // Keep the actual queue
       setPausedIndex(currentIndex);
     }
     
-    // Set single track mode
+    // Set single track mode but don't clear the queue
     setSingleTrack(track);
     setIsSingleTrackMode(true);
-    setQueue([]);
+    // Don't clear the queue here - just set single track mode
     setCurrentIndex(0);
   }, [queue, currentIndex, isSingleTrackMode]);
 
@@ -136,7 +137,7 @@ export const useQueue = () => {
   }, [currentIndex]);
 
   const getNextTrack = useCallback(() => {
-    // If in single track mode, no next track in queue
+    // If in single track mode, no next track in queue context
     if (isSingleTrackMode) return null;
     
     if (queue.length === 0) return null;
@@ -185,7 +186,7 @@ export const useQueue = () => {
         resumeQueue();
         return;
       }
-      // Otherwise, no next track in single mode
+      // Single track mode - handled by AudioPlayer
       return;
     }
     
@@ -268,6 +269,7 @@ export const useQueue = () => {
     isSingleTrackMode,
     singleTrack: singleTrack?.title,
     queueLength: queue.length,
+    pausedQueueLength: pausedQueue.length,
     currentIndex,
     currentTrack: currentTrack?.title,
     hasActiveQueue,
