@@ -20,6 +20,8 @@ const CategoryPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [currentCategoryTrack, setCurrentCategoryTrack] = useState<any>(null);
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(-1);
 
   const {
     currentTrack,
@@ -42,10 +44,13 @@ const CategoryPage = () => {
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from category page:', track);
     
-    if (currentTrack?.id === track.id) {
-      setIsGlobalPlaying(!isGlobalPlaying);
-    } else {
-      // Replace the current track/queue with this track
+    // Set as current category track
+    setCurrentCategoryTrack(track);
+    const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
+    setCurrentCategoryIndex(trackIndex);
+    
+    // Only replace queue if it's a different track
+    if (currentTrack?.id !== track.id) {
       replaceQueue({
         id: track.id,
         title: track.title,
@@ -58,8 +63,16 @@ const CategoryPage = () => {
         category_id: track.category_id,
         file_path: track.file_path || '',
       });
-      setIsGlobalPlaying(true);
     }
+    
+    setIsGlobalPlaying(true);
+  };
+
+  const handleTrackChange = (track: any) => {
+    console.log('Track changed in category page:', track);
+    setCurrentCategoryTrack(track);
+    const trackIndex = filteredTracks.findIndex(t => t.id === track.id);
+    setCurrentCategoryIndex(trackIndex);
   };
 
   const handleTagToggle = (tag: string) => {
@@ -74,6 +87,17 @@ const CategoryPage = () => {
     setSelectedTags([]);
   };
 
+  // Initialize current track if we have one playing
+  useEffect(() => {
+    if (currentTrack && !currentCategoryTrack) {
+      const trackIndex = allTracks.findIndex(t => t.id === currentTrack.id);
+      if (trackIndex >= 0) {
+        setCurrentCategoryTrack(currentTrack);
+        setCurrentCategoryIndex(trackIndex);
+      }
+    }
+  }, [currentTrack, allTracks, currentCategoryTrack]);
+
   if (!category) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -84,6 +108,8 @@ const CategoryPage = () => {
       </div>
     );
   }
+
+  const displayTrack = currentCategoryTrack || currentTrack;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -118,7 +144,7 @@ const CategoryPage = () => {
             <TrackCard
               key={track.id}
               track={track}
-              isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
+              isPlaying={displayTrack?.id === track.id && isGlobalPlaying}
               onPlay={() => handlePlayTrack(track)}
               onAddToQueue={addToQueue}
               onPlayNext={playNext}
@@ -141,11 +167,14 @@ const CategoryPage = () => {
       </div>
 
       {/* Audio Player - only show if there's a current track */}
-      {currentTrack && (
+      {displayTrack && (
         <AudioPlayer
-          currentTrack={currentTrack}
+          currentTrack={displayTrack}
           isPlaying={isGlobalPlaying}
           onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
+          onTrackChange={handleTrackChange}
+          categoryTracks={filteredTracks}
+          currentCategoryIndex={currentCategoryIndex}
         />
       )}
       

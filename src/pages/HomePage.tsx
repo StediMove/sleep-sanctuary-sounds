@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import CategoryCard from '@/components/content/CategoryCard';
@@ -23,6 +24,7 @@ const HomePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [currentHomeTrack, setCurrentHomeTrack] = useState<any>(null);
 
   const {
     currentTrack,
@@ -50,12 +52,13 @@ const HomePage = () => {
     : sampleTracks;
 
   const handlePlayTrack = (track: any) => {
-    console.log('Playing track:', track);
+    console.log('Playing track from home page:', track);
     
-    if (currentTrack?.id === track.id) {
-      setIsGlobalPlaying(!isGlobalPlaying);
-    } else {
-      // Replace the current track/queue with this track
+    // Set as current home track
+    setCurrentHomeTrack(track);
+    
+    // Only replace queue if it's a different track
+    if (currentTrack?.id !== track.id) {
       replaceQueue({
         id: track.id,
         title: track.title,
@@ -68,8 +71,14 @@ const HomePage = () => {
         category_id: track.category_id,
         file_path: track.file_path || '',
       });
-      setIsGlobalPlaying(true);
     }
+    
+    setIsGlobalPlaying(true);
+  };
+
+  const handleTrackChange = (track: any) => {
+    console.log('Track changed in home page:', track);
+    setCurrentHomeTrack(track);
   };
 
   const handleCategoryClick = (categoryId: string) => {
@@ -83,6 +92,15 @@ const HomePage = () => {
       navigate(`/category/${categoryId}`);
     }
   };
+
+  // Initialize current track if we have one playing
+  useEffect(() => {
+    if (currentTrack && !currentHomeTrack) {
+      setCurrentHomeTrack(currentTrack);
+    }
+  }, [currentTrack, currentHomeTrack]);
+
+  const displayTrack = currentHomeTrack || currentTrack;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-deep via-slate-900 to-navy-deep relative overflow-hidden">
@@ -170,7 +188,7 @@ const HomePage = () => {
             >
               <TrackCard
                 track={track}
-                isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
+                isPlaying={displayTrack?.id === track.id && isGlobalPlaying}
                 onPlay={() => handlePlayTrack(track)}
                 onAddToQueue={addToQueue}
                 onPlayNext={playNext}
@@ -217,11 +235,13 @@ const HomePage = () => {
       </section>
 
       {/* Audio Player - only show if there's a current track */}
-      {currentTrack && (
+      {displayTrack && (
         <AudioPlayer
-          currentTrack={currentTrack}
+          currentTrack={displayTrack}
           isPlaying={isGlobalPlaying}
           onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
+          onTrackChange={handleTrackChange}
+          categoryTracks={featuredTracks}
         />
       )}
       

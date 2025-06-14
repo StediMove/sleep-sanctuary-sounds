@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -40,6 +39,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     loopMode,
     isShuffled,
     isPaused,
+    isGlobalPlaying,
     setLoopMode,
     addToQueue,
     playNext,
@@ -91,18 +91,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         if (nextTrack) {
           console.log('Moving to next track in queue:', nextTrack);
           goToNext();
+        } else if (loopMode === 'all' && queue.length > 0) {
+          // Loop back to start of queue
+          console.log('Looping back to start of queue');
+          goToNext(); // This will loop to start if loopMode is 'all'
         } else {
-          // Queue finished - clear it and play random track from category
-          console.log('Queue finished, clearing queue and playing random track');
-          clearQueue();
-          const randomTrack = getRandomCategoryTrack();
-          if (randomTrack && onTrackChange) {
-            console.log('Playing random category track after queue end:', randomTrack);
-            onTrackChange(randomTrack);
-          }
+          // Queue finished and no loop - keep player open but paused
+          console.log('Queue finished, keeping player open but paused');
         }
       } else {
-        // No active queue, play random track from category
+        // No active queue, try to play random track from category
         const randomTrack = getRandomCategoryTrack();
         if (randomTrack && onTrackChange) {
           console.log('Playing random category track (no queue):', randomTrack);
@@ -122,7 +120,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [displayTrack, loopMode, isQueueActive, goToNext, getNextTrack, categoryTracks, clearQueue, onTrackChange]);
+  }, [displayTrack, loopMode, isQueueActive, goToNext, getNextTrack, categoryTracks, onTrackChange, queue.length]);
 
   // Update parent when queue track changes (but not when paused)
   useEffect(() => {
@@ -132,14 +130,17 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }
   }, [queueCurrentTrack, isPaused, onTrackChange]);
 
-  // Handle audio playback - use isPlaying for all cases now
+  // Handle audio playback
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log('Audio play state effect:', { isPlaying, displayTrack: displayTrack?.title });
+    console.log('Audio play state effect:', { isPlaying, isGlobalPlaying, displayTrack: displayTrack?.title });
 
-    if (isPlaying) {
+    // Use global playing state if queue is active, otherwise use local isPlaying
+    const shouldPlay = isQueueActive ? isGlobalPlaying : isPlaying;
+
+    if (shouldPlay) {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(console.error);
@@ -147,7 +148,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     } else {
       audio.pause();
     }
-  }, [isPlaying, displayTrack]);
+  }, [isPlaying, isGlobalPlaying, displayTrack, isQueueActive]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -190,21 +191,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         console.log('Moving to next track in queue');
         goToNext();
         return;
-      } else {
-        // At end of queue - clear it and play random track from category
-        console.log('At end of queue, clearing and playing random track');
-        clearQueue();
-        const randomTrack = getRandomCategoryTrack();
-        if (randomTrack && onTrackChange) {
-          console.log('Playing random category track (end of queue):', randomTrack);
-          onTrackChange(randomTrack);
-          return;
-        }
+      } else if (loopMode === 'all' && queue.length > 0) {
+        // Loop back to start
+        console.log('Looping back to start of queue');
+        goToNext();
+        return;
       }
     }
 
-    // Fallback to category or parent next
-    if (categoryTracks.length > 0) {
+    // Fallback to category tracks
+    if (categoryTracks.length > 1) {
       const randomTrack = getRandomCategoryTrack();
       if (randomTrack && onTrackChange) {
         console.log('Playing random category track (no queue)');
@@ -213,6 +209,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       }
     }
 
+    // Final fallback to parent next
     if (onNext) {
       console.log('Calling parent onNext');
       onNext();
@@ -234,8 +231,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       if (prevTrack) {
         console.log('Moving to previous track in queue');
         goToPrevious();
+        return;
       }
-    } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
+    }
+
+    // Fallback to category tracks
+    if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
       const prevCategoryIndex = currentCategoryIndex - 1;
       if (prevCategoryIndex >= 0) {
         console.log('Playing previous track in category');
@@ -280,11 +281,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   // Navigation buttons should always be enabled when we have content
-  const canGoNext = isPaused || queue.length > 0 || categoryTracks.length > 0 || !!onNext;
+  const canGoNext = isPaused || queue.length > 0 || categoryTracks.length > 1 || !!onNext;
   const canGoPrevious = isPaused || queue.length > 0 || 
     (categoryTracks.length > 0 && (currentCategoryIndex > 0 || loopMode === 'all')) || !!onPrevious;
   
   if (!displayTrack) return null;
+
+  // Use global playing state if queue is active, otherwise use local isPlaying
+  const displayIsPlaying = isQueueActive ? isGlobalPlaying : isPlaying;
 
   return (
     <>
@@ -344,7 +348,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 onClick={handlePlayPause}
                 className="text-white hover:bg-white/10"
               >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                {displayIsPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
               
               <Button
