@@ -11,7 +11,13 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { QueueTrack } from '@/hooks/useQueue';
-import TrackContextMenu from './TrackContextMenu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   ListMusic, 
   Play, 
@@ -19,7 +25,9 @@ import {
   GripVertical, 
   Trash2,
   Music,
-  MoreVertical
+  MoreVertical,
+  Plus,
+  RotateCcw
 } from 'lucide-react';
 
 interface QueueDrawerProps {
@@ -184,24 +192,40 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                         <Play className="h-4 w-4" />
                       </Button>
 
-                      <TrackContextMenu
-                        track={track}
-                        onAddToQueue={onAddToQueue}
-                        onPlayNext={onPlayNext}
-                        onReplaceQueue={onReplaceQueue}
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-white hover:bg-white/10"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-white hover:bg-white/10"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent 
+                          className="bg-slate-800 border-white/10 text-white"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          align="end"
                         >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </TrackContextMenu>
+                            <DropdownMenuItem onClick={() => onAddToQueue(track)} className="hover:bg-white/10 focus:bg-white/10">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add to Queue
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onPlayNext(track)} className="hover:bg-white/10 focus:bg-white/10">
+                                <Play className="h-4 w-4 mr-2" />
+                                Play Next
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-white/10" />
+                            <DropdownMenuItem onClick={() => onReplaceQueue(track)} className="hover:bg-white/10 focus:bg-white/10">
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Replace Queue
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       
                       <Button
                         variant="ghost"
