@@ -54,6 +54,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   // Use queue track if available, otherwise use prop
   const displayTrack = queueCurrentTrack || currentTrack;
 
+  // Helper function to get random track from category (excluding current)
+  const getRandomCategoryTrack = () => {
+    if (categoryTracks.length <= 1) return null;
+    const availableTracks = categoryTracks.filter(track => track.id !== displayTrack?.id);
+    const randomIndex = Math.floor(Math.random() * availableTracks.length);
+    return availableTracks[randomIndex];
+  };
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -66,14 +74,23 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       if (loopMode === 'one') {
         audio.currentTime = 0;
         audio.play();
+        return;
+      }
+
+      // First check if there's a next track in queue
+      const nextTrack = getNextTrack();
+      if (nextTrack) {
+        console.log('Moving to next track in queue:', nextTrack);
+        goToNext();
       } else {
-        // First check if there's a next track in queue
-        const nextTrack = getNextTrack();
-        if (nextTrack) {
-          console.log('Moving to next track in queue:', nextTrack);
-          goToNext();
+        // Queue is empty or finished, play random track from category
+        console.log('Queue finished, playing random track from category');
+        const randomTrack = getRandomCategoryTrack();
+        if (randomTrack && onTrackChange) {
+          console.log('Playing random category track:', randomTrack);
+          onTrackChange(randomTrack);
         } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
-          // If no queue, try to play next track in category
+          // Fallback to next track in category if available
           const nextCategoryIndex = currentCategoryIndex + 1;
           if (nextCategoryIndex < categoryTracks.length) {
             console.log('Playing next track in category:', categoryTracks[nextCategoryIndex]);
@@ -148,6 +165,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     setVolume(value[0]);
   };
 
+  const handlePlayPause = () => {
+    console.log('Play/Pause button clicked, current state:', isPlaying);
+    onPlayPause();
+  };
+
   const handleNext = () => {
     console.log('Next button clicked');
     if (queue.length > 0) {
@@ -156,7 +178,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         console.log('Moving to next track in queue');
         goToNext();
       } else {
-        console.log('No next track in queue');
+        // Queue finished, play random track from category
+        const randomTrack = getRandomCategoryTrack();
+        if (randomTrack && onTrackChange) {
+          console.log('Queue finished, playing random category track');
+          onTrackChange(randomTrack);
+        }
       }
     } else if (categoryTracks.length > 0 && currentCategoryIndex >= 0) {
       // Play next track in category
@@ -170,6 +197,13 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         // Loop back to first track
         if (onTrackChange) {
           onTrackChange(categoryTracks[0]);
+        }
+      } else {
+        // Play random track when at end
+        const randomTrack = getRandomCategoryTrack();
+        if (randomTrack && onTrackChange) {
+          console.log('At end of category, playing random track');
+          onTrackChange(randomTrack);
         }
       }
     } else if (onNext) {
@@ -237,7 +271,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   // Check if navigation buttons should be enabled
   const canGoNext = queue.length > 0 
     ? getNextTrack() !== null 
-    : (categoryTracks.length > 0 && currentCategoryIndex < categoryTracks.length - 1) || loopMode === 'all' || !!onNext;
+    : categoryTracks.length > 0 || !!onNext;
     
   const canGoPrevious = queue.length > 0 
     ? getPreviousTrack() !== null 
@@ -292,7 +326,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onPlayPause}
+                onClick={handlePlayPause}
                 className="text-white hover:bg-white/10"
               >
                 {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
