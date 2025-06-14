@@ -81,33 +81,44 @@ const TrackCard = ({
     >
       <CardContent className="p-6 h-full flex flex-col">
         <div className="flex items-start space-x-6 flex-1">
-          {/* Enhanced Thumbnail */}
-          <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-              {track.thumbnail_url ? (
-                <img 
-                  src={track.thumbnail_url} 
-                  alt={track.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to icon if image fails to load
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.innerHTML = isPlaying 
-                      ? '<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
-                      : '<svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="m7 4 10 6L7 16V4z"/></svg>';
-                  }}
-                />
-              ) : (
-                isPlaying ? (
-                  <Pause className="h-8 w-8 text-white" />
+          {/* Thumbnail and Category Badge */}
+          <div className="flex flex-col items-center space-y-2 w-20 shrink-0">
+            {/* Enhanced Thumbnail */}
+            <div className="relative">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                {track.thumbnail_url ? (
+                  <img 
+                    src={track.thumbnail_url} 
+                    alt={track.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to icon if image fails to load
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerHTML = isPlaying 
+                        ? '<svg class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
+                        : '<svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="m7 4 10 6L7 16V4z"/></svg>';
+                    }}
+                  />
                 ) : (
-                  <Play className="h-8 w-8 text-white ml-1" />
-                )
+                  isPlaying ? (
+                    <Pause className="h-8 w-8 text-white" />
+                  ) : (
+                    <Play className="h-8 w-8 text-white ml-1" />
+                  )
+                )}
+              </div>
+              {isPlaying && (
+                <div className="absolute inset-0 rounded-2xl border-2 border-white/50 animate-pulse" />
               )}
             </div>
-            {isPlaying && (
-              <div className="absolute inset-0 rounded-2xl border-2 border-white/50 animate-pulse" />
-            )}
+            
+            {/* Category Badge */}
+            <Badge 
+              variant="secondary" 
+              className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1 w-full text-center justify-center truncate`}
+            >
+              {track.categories?.name || 'Unknown'}
+            </Badge>
           </div>
           
           {/* Content */}
@@ -118,12 +129,6 @@ const TrackCard = ({
                   {track.title}
                 </h3>
                 <div className="flex items-center space-x-2 mt-2 sm:mt-0 sm:ml-2 shrink-0">
-                  <Badge 
-                    variant="secondary" 
-                    className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs font-medium px-2 py-1`}
-                  >
-                    {track.categories?.name || 'Unknown'}
-                  </Badge>
                   {(onAddToQueue || onPlayNext || onReplaceQueue) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
