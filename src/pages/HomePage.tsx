@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Star, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useQueue } from '@/hooks/useQueue';
+import { useQueueContext } from '@/contexts/QueueContext';
 import { 
   realAudioContent, 
   realCategories, 
@@ -26,13 +26,11 @@ const HomePage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const {
-    queue,
     currentTrack,
-    currentIndex,
     addToQueue,
     playNext,
     replaceQueue,
-  } = useQueue();
+  } = useQueueContext();
 
   // Use real categories data
   const categories = realCategories;

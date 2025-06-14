@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,7 +6,7 @@ import AudioPlayer from '@/components/audio/AudioPlayer';
 import FilterTags from '@/components/content/FilterTags';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useQueue } from '@/hooks/useQueue';
+import { useQueueContext } from '@/contexts/QueueContext';
 import { 
   realCategories, 
   getTracksByCategory,
@@ -23,13 +22,11 @@ const CategoryPage = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
-    queue,
     currentTrack,
-    currentIndex,
     addToQueue,
     playNext,
     replaceQueue,
-  } = useQueue();
+  } = useQueueContext();
 
   const category = realCategories.find(cat => cat.id === categoryId);
   const allTracks = getTracksByCategory(categoryId || '').map(track => ({

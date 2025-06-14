@@ -1,10 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle } from 'lucide-react';
-import { useQueue, LoopMode } from '@/hooks/useQueue';
+import { LoopMode } from '@/hooks/useQueue';
+import { useQueueContext } from '@/contexts/QueueContext';
 import QueueDrawer from './QueueDrawer';
 
 interface AudioPlayerProps {
@@ -43,10 +43,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     moveTrack,
     getNextTrack,
     getPreviousTrack,
-  } = useQueue();
+    currentTrack: queueCurrentTrack
+  } = useQueueContext();
 
   // Use queue track if available, otherwise use prop
-  const displayTrack = queue.length > 0 ? queue[currentIndex] : currentTrack;
+  const displayTrack = queueCurrentTrack || currentTrack;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -88,11 +89,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   // Update parent when queue track changes
   useEffect(() => {
-    if (queue.length > 0 && queue[currentIndex] && onTrackChange) {
-      console.log('Queue track changed, updating parent:', queue[currentIndex]);
-      onTrackChange(queue[currentIndex]);
+    if (queueCurrentTrack && onTrackChange) {
+      console.log('Queue track changed, updating parent:', queueCurrentTrack);
+      onTrackChange(queueCurrentTrack);
     }
-  }, [queue, currentIndex, onTrackChange]);
+  }, [queueCurrentTrack, onTrackChange]);
 
   useEffect(() => {
     const audio = audioRef.current;
