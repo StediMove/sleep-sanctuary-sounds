@@ -9,17 +9,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useQueueContext } from '@/contexts/QueueContext';
 import FeaturedContent from '@/components/content/FeaturedContent';
+import DailyTip from '@/components/content/DailyTip';
+import LockedContentTeaser from '@/components/content/LockedContentTeaser';
 import { 
-  realAudioContent, 
   realCategories, 
   getTrackCountByCategory, 
   getTotalTrackCount,
-  getFreeTrackCount,
   getTotalDurationMinutes,
-  getSampleTracks,
   getTracksByCategory,
   getNewReleases,
-  getTrendingTracks
+  getTrendingTracks,
+  getPremiumTrackCount,
 } from '@/utils/audioContent';
 
 const HomePage = () => {
@@ -143,6 +143,13 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Daily Tip for logged-in users */}
+      {user && (
+        <section className="container mx-auto px-6 relative z-10 -mt-8">
+            <DailyTip />
+        </section>
+      )}
+
       {/* Categories */}
       <section className="container mx-auto px-6 py-12 relative z-10">
         <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">Explore Categories</h2>
@@ -166,7 +173,7 @@ const HomePage = () => {
       {/* Sample/Featured Content */}
       <section className="container mx-auto px-6 py-12 relative z-10">
         <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">
-          {user ? 'Featured Content' : 'Sample Tracks'}
+          {user ? 'Featured Content' : 'Unlock Our Full Library'}
         </h2>
         {user ? (
           <FeaturedContent
@@ -177,29 +184,7 @@ const HomePage = () => {
             trendingNow={trendingNow}
           />
         ) : (
-          <>
-            <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
-              Try these sample tracks from each category. Sign up for full access to our complete library.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {sampleTracks.map((track, index) => (
-                <div 
-                  key={track.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 150}ms` }}
-                >
-                  <TrackCard
-                    track={track}
-                    isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
-                    onPlay={() => handlePlayTrack(track)}
-                    onAddToQueue={addToQueue}
-                    onPlayNext={playNext}
-                    onReplaceQueue={replaceQueue}
-                  />
-                </div>
-              ))}
-            </div>
-          </>
+          <LockedContentTeaser />
         )}
       </section>
 
@@ -221,8 +206,8 @@ const HomePage = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-400 to-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-3xl font-bold text-white mb-2">3</h3>
-              <p className="text-white/70 font-light">Free Tracks</p>
+              <h3 className="text-3xl font-bold text-white mb-2">{getPremiumTrackCount()}</h3>
+              <p className="text-white/70 font-light">Premium Tracks</p>
             </CardContent>
           </Card>
           
