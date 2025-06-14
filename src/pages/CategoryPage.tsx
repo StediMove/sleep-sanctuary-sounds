@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,7 +56,7 @@ const CategoryPage = () => {
       tags: track.tags,
       thumbnail_url: track.thumbnail_url,
       categories: track.categories,
-      category_id: track.category_id,
+      category_id: track.category,
       file_path: track.file_path || '',
     });
     

@@ -26,6 +26,7 @@ interface QueueContextType {
   getPreviousTrack: () => QueueTrack | null;
   goToNext: () => void;
   goToPrevious: () => void;
+  playSingleTrackAndClearQueue: (track: QueueTrack) => void;
   playTrackAt: (index: number) => void;
 }
 

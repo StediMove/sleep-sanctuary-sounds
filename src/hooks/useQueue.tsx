@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 export type QueueTrack = {
@@ -115,6 +114,19 @@ export const useQueue = () => {
     setPausedIndex(0);
     
     // Don't clear single track when clearing queue
+  }, []);
+
+  const playSingleTrackAndClearQueue = useCallback((track: QueueTrack) => {
+    console.log('Clearing queue and playing single track:', track.title);
+    setQueue([]);
+    setPausedQueue([]);
+    setPausedIndex(0);
+    setOriginalQueue([]);
+    setIsShuffled(false);
+    
+    setSingleTrack(track);
+    setIsSingleTrackMode(true);
+    setCurrentIndex(0);
   }, []);
 
   const moveTrack = useCallback((fromIndex: number, toIndex: number) => {
@@ -300,6 +312,7 @@ export const useQueue = () => {
     getPreviousTrack,
     goToNext,
     goToPrevious,
+    playSingleTrackAndClearQueue,
     playTrackAt,
   };
 };

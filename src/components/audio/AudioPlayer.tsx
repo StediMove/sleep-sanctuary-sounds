@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -46,6 +45,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     getPreviousTrack,
     goToNext,
     goToPrevious,
+    playSingleTrackAndClearQueue,
     playTrackAt,
   } = useQueueContext();
 
@@ -98,14 +98,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           console.log('Moving to next track in queue:', nextTrack);
           goToNext();
         } else {
-          // Queue finished - play random track from same category as last queue track
+          // Queue finished - play random track and clear queue
           console.log('Queue finished, playing random track from same category');
           const lastQueueTrack = queue[queue.length - 1];
           if (lastQueueTrack?.category_id) {
             const randomTrack = getRandomTrackFromCategory(lastQueueTrack.category_id, lastQueueTrack.id);
             if (randomTrack) {
               console.log('Playing random track from category:', randomTrack.title);
-              replaceQueue(randomTrack);
+              playSingleTrackAndClearQueue(randomTrack);
             }
           }
         }
@@ -131,7 +131,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue]);
+  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue, playSingleTrackAndClearQueue]);
 
   // Handle audio source changes
   useEffect(() => {
@@ -210,7 +210,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           const randomTrack = getRandomTrackFromCategory(lastQueueTrack.category_id, lastQueueTrack.id);
           if (randomTrack) {
             console.log('Playing random track from category:', randomTrack.title);
-            replaceQueue(randomTrack);
+            playSingleTrackAndClearQueue(randomTrack);
             return;
           }
         }
