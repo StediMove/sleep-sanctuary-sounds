@@ -208,7 +208,7 @@ const HomePage = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-400 to-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-3xl font-bold text-white mb-2">{getFreeTrackCount()}</h3>
+              <h3 className="text-3xl font-bold text-white mb-2">3</h3>
               <p className="text-white/70 font-light">Free Tracks</p>
             </CardContent>
           </Card>

@@ -160,6 +160,20 @@
   }
 }
 
+/* Purple slider styling */
+[data-radix-slider-track] {
+  background-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+[data-radix-slider-range] {
+  background-color: rgb(147, 51, 234) !important;
+}
+
+[data-radix-slider-thumb] {
+  background-color: rgb(147, 51, 234) !important;
+  border-color: rgb(147, 51, 234) !important;
+}
+
 @keyframes twinkle {
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); }

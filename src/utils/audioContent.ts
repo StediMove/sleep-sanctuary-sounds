@@ -22,6 +22,16 @@ export const realAudioContent = [
     tags: ['fantasy', 'adventure', 'ocean']
   },
   {
+    id: 'cleo-little-cloud',
+    title: 'Cleo the Little Cloud',
+    description: 'A heartwarming story about a little cloud and her journey through the sky.',
+    category: 'bedtime-stories',
+    file_path: '/audio/bedtime-stories/Cleo the Little Cloud.mp3',
+    duration: 480, // 8:00 minutes
+    is_premium: true,
+    tags: ['fantasy', 'sky', 'adventure']
+  },
+  {
     id: 'forest-waits-for-one',
     title: 'The Forest That Waits for One',
     description: 'A mystical tale about a special forest waiting for someone special.',
@@ -30,6 +40,16 @@ export const realAudioContent = [
     duration: 480, // 8:00 minutes
     is_premium: true,
     tags: ['fantasy', 'nature', 'mystery']
+  },
+  {
+    id: 'tilly-turtle-moonlight',
+    title: 'Tilly the Turtle\'s Moonlight Journey',
+    description: 'Join Tilly on her magical moonlight adventure.',
+    category: 'bedtime-stories',
+    file_path: '/audio/bedtime-stories/Tilly the Turtle\'s Moonlight Journey.mp3',
+    duration: 420, // 7:00 minutes
+    is_premium: true,
+    tags: ['animals', 'moonlight', 'journey']
   },
   // Calming Sounds
   {
@@ -49,7 +69,7 @@ export const realAudioContent = [
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Forest sounds.mp3',
     duration: 1200, // 20:00 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['nature', 'birds', 'outdoor']
   },
   {
@@ -59,7 +79,7 @@ export const realAudioContent = [
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Gentle rain.mp3',
     duration: 1500, // 25:00 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['weather', 'rain', 'nature']
   },
   {
@@ -79,7 +99,7 @@ export const realAudioContent = [
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Ocean sounds.mp3',
     duration: 2000, // 33:20 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['water', 'ocean', 'waves']
   },
   {
@@ -89,7 +109,7 @@ export const realAudioContent = [
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Running water.mp3',
     duration: 1200, // 20:00 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['water', 'stream', 'nature']
   },
   {
@@ -119,7 +139,7 @@ export const realAudioContent = [
     category: 'calming-sounds',
     file_path: '/audio/calming-sounds/Waterfall.mp3',
     duration: 1400, // 23:20 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['water', 'waterfall', 'nature']
   },
   // Meditation Music
@@ -130,7 +150,7 @@ export const realAudioContent = [
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music crystal.mp3',
     duration: 900, // 15:00 minutes
-    is_premium: true,
+    is_premium: false,
     tags: ['spiritual', 'healing', 'crystal']
   },
   {
@@ -140,7 +160,7 @@ export const realAudioContent = [
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Meditation music rest now.mp3',
     duration: 1200, // 20:00 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['relaxation', 'peaceful', 'immediate']
   },
   {
@@ -160,7 +180,7 @@ export const realAudioContent = [
     category: 'meditation-music',
     file_path: '/audio/meditation-music/Relaxing Sleep Music.mp3',
     duration: 1800, // 30:00 minutes
-    is_premium: false,
+    is_premium: true,
     tags: ['sleep', 'peaceful', 'composed']
   }
 ];
@@ -189,7 +209,7 @@ export const realCategories = [
     slug: 'meditation-music',
     description: 'Peaceful melodies for meditation and mindfulness',
     icon: 'headphones',
-    color: '#dc2626' // Red
+    color: '#059669' // Green
   }
 ];
 
@@ -229,7 +249,7 @@ export const getSampleTracks = () => {
   return [
     realAudioContent.find(track => track.id === 'benny-sleepy-bear'), // Free bedtime story
     realAudioContent.find(track => track.id === 'fireplace-sounds'), // Free calming sound
-    realAudioContent.find(track => track.id === 'meditation-rest-now') // Free meditation music
+    realAudioContent.find(track => track.id === 'meditation-crystal') // Free meditation music
   ].filter(Boolean);
 };
 

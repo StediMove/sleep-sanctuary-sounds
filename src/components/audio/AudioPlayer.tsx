@@ -148,13 +148,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               {formatTime(currentTime)}
             </span>
             
-            <Slider
-              value={[currentTime]}
-              max={duration || 100}
-              step={1}
-              onValueChange={handleSeek}
-              className="flex-1"
-            />
+            <div className="flex-1">
+              <Slider
+                value={[currentTime]}
+                max={duration || 100}
+                step={1}
+                onValueChange={handleSeek}
+                className="w-full [&>span[role=slider]]:bg-purple-500 [&>span[role=slider]]:border-purple-500 [&>span[data-orientation=horizontal]]:bg-purple-500"
+              />
+            </div>
             
             <span className="text-white/60 text-sm min-w-[40px]">
               {formatTime(duration)}
@@ -162,13 +164,15 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
             
             <div className="flex items-center space-x-2 min-w-[100px]">
               <Volume2 className="h-4 w-4 text-white/60" />
-              <Slider
-                value={[volume]}
-                max={1}
-                step={0.1}
-                onValueChange={handleVolumeChange}
-                className="w-16"
-              />
+              <div className="w-16">
+                <Slider
+                  value={[volume]}
+                  max={1}
+                  step={0.1}
+                  onValueChange={handleVolumeChange}
+                  className="w-full [&>span[role=slider]]:bg-purple-500 [&>span[role=slider]]:border-purple-500 [&>span[data-orientation=horizontal]]:bg-purple-500"
+                />
+              </div>
             </div>
           </div>
         </div>
