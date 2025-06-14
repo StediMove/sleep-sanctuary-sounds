@@ -1,4 +1,3 @@
-
 // Real audio content based on the files uploaded to GitHub
 export const realAudioContent = [
   // Bedtime Stories
@@ -270,6 +269,23 @@ export const getSampleTracks = () => {
     realAudioContent.find(track => track.id === 'fireplace-sounds'), // Free calming sound
     realAudioContent.find(track => track.id === 'meditation-crystal') // Free meditation music
   ].filter(Boolean);
+};
+
+export const getNewReleases = (count: number = 5) => {
+  // Assuming recent additions are at the end of the array
+  return [...realAudioContent].reverse().slice(0, count);
+};
+
+export const getTrendingTracks = () => {
+  // Mocking trending tracks for now
+  const trendingIds = [
+    'captain-nilo-starwhale',
+    'forest-sounds',
+    'meditation-sunset',
+    'gentle-rain',
+    'tilly-turtle-moonlight',
+  ];
+  return realAudioContent.filter(track => trendingIds.includes(track.id));
 };
 
 export const getTagsByCategory = (categoryId: string): string[] => {

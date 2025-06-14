@@ -8,6 +8,7 @@ import { Clock, Star, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useQueueContext } from '@/contexts/QueueContext';
+import FeaturedContent from '@/components/content/FeaturedContent';
 import { 
   realAudioContent, 
   realCategories, 
@@ -15,7 +16,10 @@ import {
   getTotalTrackCount,
   getFreeTrackCount,
   getTotalDurationMinutes,
-  getSampleTracks
+  getSampleTracks,
+  getTracksByCategory,
+  getNewReleases,
+  getTrendingTracks
 } from '@/utils/audioContent';
 
 const HomePage = () => {
@@ -35,18 +39,24 @@ const HomePage = () => {
   // Use real categories data
   const categories = realCategories;
 
-  // Get sample tracks for non-users, featured tracks for users
+  // Get sample tracks for non-users
   const sampleTracks = getSampleTracks().map(track => ({
     ...track,
     categories: { name: categories.find(cat => cat.id === track?.category)?.name || 'Unknown' }
   }));
   
-  const featuredTracks = user 
-    ? realAudioContent.slice(0, 6).map(track => ({
-        ...track,
-        categories: { name: categories.find(cat => cat.id === track.category)?.name || 'Unknown' }
-      }))
-    : sampleTracks;
+  // New data for FeaturedContent component
+  const mapTracks = (tracks: any[]) => tracks.map(track => ({
+    ...track,
+    category_id: track.category,
+    categories: { name: categories.find(cat => cat.id === track.category)?.name || 'Unknown' }
+  }));
+
+  const bedtimeStories = mapTracks(getTracksByCategory('bedtime-stories'));
+  const calmingSounds = mapTracks(getTracksByCategory('calming-sounds'));
+  const meditationMusic = mapTracks(getTracksByCategory('meditation-music'));
+  const newReleases = mapTracks(getNewReleases());
+  const trendingNow = mapTracks(getTrendingTracks());
 
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from home page:', track);
@@ -158,29 +168,39 @@ const HomePage = () => {
         <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">
           {user ? 'Featured Content' : 'Sample Tracks'}
         </h2>
-        {!user && (
-          <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
-            Try these sample tracks from each category. Sign up for full access to our complete library.
-          </p>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {featuredTracks.map((track, index) => (
-            <div 
-              key={track.id}
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 150}ms` }}
-            >
-              <TrackCard
-                track={track}
-                isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
-                onPlay={() => handlePlayTrack(track)}
-                onAddToQueue={addToQueue}
-                onPlayNext={playNext}
-                onReplaceQueue={replaceQueue}
-              />
+        {user ? (
+          <FeaturedContent
+            bedtimeStories={bedtimeStories}
+            calmingSounds={calmingSounds}
+            meditationMusic={meditationMusic}
+            newReleases={newReleases}
+            trendingNow={trendingNow}
+          />
+        ) : (
+          <>
+            <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
+              Try these sample tracks from each category. Sign up for full access to our complete library.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {sampleTracks.map((track, index) => (
+                <div 
+                  key={track.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <TrackCard
+                    track={track}
+                    isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
+                    onPlay={() => handlePlayTrack(track)}
+                    onAddToQueue={addToQueue}
+                    onPlayNext={playNext}
+                    onReplaceQueue={replaceQueue}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </section>
 
       {/* Stats Section */}
