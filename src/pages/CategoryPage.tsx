@@ -19,17 +19,15 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [isPlaying, setIsPlaying] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [currentCategoryTrack, setCurrentCategoryTrack] = useState<any>(null);
 
   const {
     currentTrack,
-    isPaused,
+    isGlobalPlaying,
+    setIsGlobalPlaying,
     addToQueue,
     playNext,
     replaceQueue,
-    pauseQueue,
   } = useQueueContext();
 
   const category = realCategories.find(cat => cat.id === categoryId);
@@ -41,36 +39,27 @@ const CategoryPage = () => {
   const availableTags = getTagsByCategory(categoryId || '');
   const filteredTracks = filterTracksByTags(allTracks, selectedTags);
 
-  // Current track for category playback (either queue track or category track)
-  const displayTrack = (!isPaused && currentTrack) || currentCategoryTrack;
-  
-  // Find current track index in filtered tracks
-  const currentCategoryIndex = displayTrack 
-    ? filteredTracks.findIndex(track => track.id === displayTrack.id)
-    : -1;
-
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from category page:', track);
     
-    if (displayTrack?.id === track.id) {
-      setIsPlaying(!isPlaying);
+    if (currentTrack?.id === track.id) {
+      setIsGlobalPlaying(!isGlobalPlaying);
     } else {
-      // If there's a queue running, pause it and play this track
-      if (currentTrack && !isPaused) {
-        console.log('Pausing queue to play selected track');
-        pauseQueue();
-      }
-      
-      // Set as category track and play
-      setCurrentCategoryTrack(track);
-      setIsPlaying(true);
+      // Replace the current track/queue with this track
+      replaceQueue({
+        id: track.id,
+        title: track.title,
+        description: track.description,
+        duration: track.duration,
+        is_premium: track.is_premium,
+        tags: track.tags,
+        thumbnail_url: track.thumbnail_url,
+        categories: track.categories,
+        category_id: track.category_id,
+        file_path: track.file_path || '',
+      });
+      setIsGlobalPlaying(true);
     }
-  };
-
-  const handleTrackChange = (newTrack: any) => {
-    console.log('Track changed to:', newTrack);
-    setCurrentCategoryTrack(newTrack);
-    setIsPlaying(true);
   };
 
   const handleTagToggle = (tag: string) => {
@@ -129,7 +118,7 @@ const CategoryPage = () => {
             <TrackCard
               key={track.id}
               track={track}
-              isPlaying={displayTrack?.id === track.id && isPlaying}
+              isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
               onPlay={() => handlePlayTrack(track)}
               onAddToQueue={addToQueue}
               onPlayNext={playNext}
@@ -151,15 +140,14 @@ const CategoryPage = () => {
         )}
       </div>
 
-      {/* Audio Player */}
-      <AudioPlayer
-        currentTrack={displayTrack}
-        isPlaying={isPlaying}
-        onPlayPause={() => setIsPlaying(!isPlaying)}
-        onTrackChange={handleTrackChange}
-        categoryTracks={filteredTracks}
-        currentCategoryIndex={currentCategoryIndex}
-      />
+      {/* Audio Player - only show if there's a current track */}
+      {currentTrack && (
+        <AudioPlayer
+          currentTrack={currentTrack}
+          isPlaying={isGlobalPlaying}
+          onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
+        />
+      )}
       
       {/* Bottom spacing for fixed player */}
       <div className="h-24"></div>

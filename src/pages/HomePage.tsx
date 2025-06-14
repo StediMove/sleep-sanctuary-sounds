@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import CategoryCard from '@/components/content/CategoryCard';
@@ -24,11 +23,11 @@ const HomePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentHomeTrack, setCurrentHomeTrack] = useState<any>(null);
 
   const {
     currentTrack,
+    isGlobalPlaying,
+    setIsGlobalPlaying,
     addToQueue,
     playNext,
     replaceQueue,
@@ -50,42 +49,27 @@ const HomePage = () => {
       }))
     : sampleTracks;
 
-  // Current track for home playback (either queue track or home track)
-  const displayTrack = currentTrack || currentHomeTrack;
-  
-  // Find current track index in featured tracks
-  const currentHomeIndex = displayTrack 
-    ? featuredTracks.findIndex(track => track.id === displayTrack.id)
-    : -1;
-
   const handlePlayTrack = (track: any) => {
     console.log('Playing track:', track);
-    const queueTrack = {
-      id: track.id,
-      title: track.title,
-      description: track.description,
-      duration: track.duration,
-      is_premium: track.is_premium,
-      tags: track.tags,
-      thumbnail_url: track.thumbnail_url,
-      categories: track.categories,
-      category_id: track.category_id,
-      file_path: track.file_path,
-    };
     
-    if (displayTrack?.id === track.id) {
-      setIsPlaying(!isPlaying);
+    if (currentTrack?.id === track.id) {
+      setIsGlobalPlaying(!isGlobalPlaying);
     } else {
-      // Set as home track for category-like playback
-      setCurrentHomeTrack(track);
-      setIsPlaying(true);
+      // Replace the current track/queue with this track
+      replaceQueue({
+        id: track.id,
+        title: track.title,
+        description: track.description,
+        duration: track.duration,
+        is_premium: track.is_premium,
+        tags: track.tags,
+        thumbnail_url: track.thumbnail_url,
+        categories: track.categories,
+        category_id: track.category_id,
+        file_path: track.file_path || '',
+      });
+      setIsGlobalPlaying(true);
     }
-  };
-
-  const handleTrackChange = (newTrack: any) => {
-    console.log('Home track changed to:', newTrack);
-    setCurrentHomeTrack(newTrack);
-    setIsPlaying(true);
   };
 
   const handleCategoryClick = (categoryId: string) => {
@@ -186,7 +170,7 @@ const HomePage = () => {
             >
               <TrackCard
                 track={track}
-                isPlaying={displayTrack?.id === track.id && isPlaying}
+                isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
                 onPlay={() => handlePlayTrack(track)}
                 onAddToQueue={addToQueue}
                 onPlayNext={playNext}
@@ -232,15 +216,14 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Audio Player */}
-      <AudioPlayer
-        currentTrack={displayTrack}
-        isPlaying={isPlaying}
-        onPlayPause={() => setIsPlaying(!isPlaying)}
-        onTrackChange={handleTrackChange}
-        categoryTracks={featuredTracks}
-        currentCategoryIndex={currentHomeIndex}
-      />
+      {/* Audio Player - only show if there's a current track */}
+      {currentTrack && (
+        <AudioPlayer
+          currentTrack={currentTrack}
+          isPlaying={isGlobalPlaying}
+          onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
+        />
+      )}
       
       {/* Bottom spacing for fixed player */}
       <div className="h-32"></div>
