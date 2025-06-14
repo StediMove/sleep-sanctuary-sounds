@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +32,7 @@ const CategoryPage = () => {
   const category = realCategories.find(cat => cat.id === categoryId);
   const allTracks = getTracksByCategory(categoryId || '').map(track => ({
     ...track,
+    category_id: track.category,
     categories: { name: category?.name || 'Unknown' }
   }));
   

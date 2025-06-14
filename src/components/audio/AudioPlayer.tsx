@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -6,7 +7,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Repeat1, Shuffle }
 import { LoopMode } from '@/hooks/useQueue';
 import { useQueueContext } from '@/contexts/QueueContext';
 import QueueDrawer from './QueueDrawer';
-import { getTracksByCategory } from '@/utils/audioContent';
+import { getTracksByCategory, realCategories } from '@/utils/audioContent';
 
 interface AudioPlayerProps {
   currentTrack: any;
@@ -65,10 +66,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     
     if (availableTracks.length > 0) {
       const randomTrack = availableTracks[Math.floor(Math.random() * availableTracks.length)];
+      const category = realCategories.find(c => c.id === categoryId);
       return {
         ...randomTrack,
         file_path: randomTrack.file_path || '',
-        categories: { name: getTracksByCategory(categoryId)[0]?.category || 'Unknown' },
+        categories: { name: category?.name || 'Unknown' },
         category_id: categoryId
       };
     }
