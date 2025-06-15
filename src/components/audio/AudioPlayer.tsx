@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -464,9 +463,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               {formatTime(duration)}
             </span>
             
-            <div className="flex items-center space-x-2 md:min-w-[100px]">
+            <div className="hidden md:flex items-center space-x-2 md:min-w-[100px]">
               <Volume2 className="h-4 w-4 text-white/60" />
-              <div className="w-16 hidden md:block">
+              <div className="w-16">
                 <Slider
                   value={[volume]}
                   max={1}
@@ -484,4 +483,3 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
 };
 
 export default AudioPlayer;
-
