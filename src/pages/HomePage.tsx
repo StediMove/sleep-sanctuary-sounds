@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import CategoryCard from '@/components/content/CategoryCard';
@@ -136,7 +137,7 @@ const HomePage = () => {
                 </Button>
               </Link>
               <p className="text-white/60 text-sm font-light">
-                Free preview • Full access with account
+                Full access for $18/year.
               </p>
             </div>
           )}
@@ -179,7 +180,7 @@ const HomePage = () => {
         ) : (
           <>
             <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
-              Try these sample tracks from each category. Sign up for full access to our complete library.
+              Try these sample tracks from each category. Sign up and subscribe to get full access to our complete library.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {sampleTracks.map((track, index) => (
