@@ -1,11 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import CategoryCard from '@/components/content/CategoryCard';
 import TrackCard from '@/components/content/TrackCard';
+import SubscriptionButton from '@/components/subscription/SubscriptionButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Star, Sparkles } from 'lucide-react';
+import { Clock, Star, Sparkles, RefreshCw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useQueueContext } from '@/contexts/QueueContext';
@@ -25,6 +26,7 @@ import {
 
 const HomePage = () => {
   const { user } = useAuth();
+  const { subscribed, checkSubscription, loading: subscriptionLoading } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -62,6 +64,16 @@ const HomePage = () => {
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from home page:', track);
     
+    // Check if user has access to premium content
+    if (track.is_premium && !subscribed && user) {
+      toast({
+        title: "Premium content",
+        description: "Subscribe to access all premium content.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Check if this track is already playing
     if (currentTrack?.id === track.id && isGlobalPlaying) {
       console.log('Track already playing');
@@ -89,7 +101,13 @@ const HomePage = () => {
     if (!user) {
       toast({
         title: "Sign in required",
-        description: "Create an account to access all content.",
+        description: "Create an account to access content.",
+        variant: "destructive"
+      });
+    } else if (!subscribed) {
+      toast({
+        title: "Subscription required",
+        description: "Subscribe to access all categories.",
         variant: "destructive"
       });
     } else {
@@ -125,21 +143,26 @@ const HomePage = () => {
             designed to help you drift into restful sleep.
           </p>
           
-          {!user && (
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Link to="/auth">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white px-8 py-4 rounded-2xl font-medium text-lg shadow-2xl button-pulse animate-glow"
-                >
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Start Your Journey
-                </Button>
-              </Link>
-              <p className="text-white/60 text-sm font-light">
-                Full access for $18/year.
-              </p>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <SubscriptionButton />
+            {user && (
+              <Button
+                onClick={checkSubscription}
+                disabled={subscriptionLoading}
+                variant="ghost"
+                size="sm"
+                className="text-white/70 hover:text-white"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${subscriptionLoading ? 'animate-spin' : ''}`} />
+                Refresh Status
+              </Button>
+            )}
+          </div>
+          
+          {subscribed && (
+            <p className="text-green-400 text-sm font-light mt-4">
+              ✓ Premium subscriber - Full access unlocked!
+            </p>
           )}
         </div>
       </section>
@@ -167,9 +190,9 @@ const HomePage = () => {
       {/* Sample/Featured Content */}
       <section className="container mx-auto px-6 py-12 relative z-10">
         <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">
-          {user ? 'Featured Content' : 'Sample Tracks'}
+          {user && subscribed ? 'Featured Content' : 'Sample Tracks'}
         </h2>
-        {user ? (
+        {user && subscribed ? (
           <FeaturedContent
             bedtimeStories={bedtimeStories}
             calmingSounds={calmingSounds}
@@ -180,7 +203,10 @@ const HomePage = () => {
         ) : (
           <>
             <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
-              Try these sample tracks from each category. Sign up and subscribe to get full access to our complete library.
+              {user 
+                ? "Try these sample tracks. Subscribe for $18/year to get full access to our complete library."
+                : "Try these sample tracks from each category. Sign up and subscribe to get full access to our complete library."
+              }
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {sampleTracks.map((track, index) => (
@@ -223,7 +249,7 @@ const HomePage = () => {
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-3xl font-bold text-white mb-2">3</h3>
-              <p className="text-white/70 font-light">Free Tracks</p>
+              <p className="text-white/70 font-light">Free Samples</p>
             </CardContent>
           </Card>
           
