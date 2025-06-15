@@ -156,6 +156,50 @@ export const realAudioContent = [
     is_premium: true,
     tags: ['water', 'waterfall', 'nature']
   },
+  {
+    id: 'rain-in-forest',
+    title: 'Rain in the Forest',
+    description: 'The gentle sound of rain falling in a lush forest, a perfect soundscape for relaxation and sleep.',
+    category: 'calming-sounds',
+    file_path: '/audio/calming-sounds/sounds-of-nature-rain-in-the-forest-262403.mp3',
+    thumbnail_url: undefined,
+    duration: 1200, // 20:00 minutes
+    is_premium: true,
+    tags: ['nature', 'rain', 'forest', 'weather']
+  },
+  {
+    id: 'relax-in-cave',
+    title: 'Relax in a Cave',
+    description: 'Find tranquility in the echoing stillness of a secluded cave, with subtle water drips.',
+    category: 'calming-sounds',
+    file_path: '/audio/calming-sounds/sounds-of-nature-relax-in-a-cave-276297.mp3',
+    thumbnail_url: undefined,
+    duration: 900, // 15:00 minutes
+    is_premium: true,
+    tags: ['nature', 'cave', 'ambient', 'water']
+  },
+  {
+    id: 'thunderstorm-on-pandora',
+    title: 'Thunderstorm on Pandora',
+    description: 'An immersive thunderstorm experience on a distant, mystical world. Rumbles of thunder and alien rain.',
+    category: 'calming-sounds',
+    file_path: '/audio/calming-sounds/sounds-of-nature-thunderstorm-on-pandora-262405.mp3',
+    thumbnail_url: undefined,
+    duration: 1500, // 25:00 minutes
+    is_premium: true,
+    tags: ['weather', 'thunderstorm', 'rain', 'fantasy']
+  },
+  {
+    id: 'wind-in-desert',
+    title: 'Wind in the Desert',
+    description: 'The lonely, sweeping sound of wind across vast desert sands. A sound of solitude and peace.',
+    category: 'calming-sounds',
+    file_path: '/audio/calming-sounds/sounds-of-nature-wind-in-the-desert-262406.mp3',
+    thumbnail_url: undefined,
+    duration: 1080, // 18:00 minutes
+    is_premium: true,
+    tags: ['nature', 'wind', 'desert', 'ambient']
+  },
   // Meditation Music
   {
     id: 'meditation-crystal',
@@ -234,7 +278,7 @@ export const realCategories = [
 // Category filter tags
 export const categoryTags = {
   'bedtime-stories': ['animals', 'fantasy', 'adventure', 'nature', 'mystery', 'friendship', 'ocean'],
-  'calming-sounds': ['nature', 'water', 'weather', 'indoor', 'outdoor', 'night', 'ocean', 'waves', 'rain', 'cozy', 'warm', 'birds', 'ambient', 'village', 'stream', 'waterfall'],
+  'calming-sounds': ['nature', 'water', 'weather', 'indoor', 'outdoor', 'night', 'ocean', 'waves', 'rain', 'cozy', 'warm', 'birds', 'ambient', 'village', 'stream', 'waterfall', 'forest', 'cave', 'thunderstorm', 'desert', 'fantasy'],
   'meditation-music': ['spiritual', 'healing', 'relaxation', 'peaceful', 'sleep', 'warm', 'sunset', 'inspiring', 'crystal', 'immediate', 'composed']
 };
 
