@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -132,6 +131,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     };
     const handleDurationChange = () => setDuration(audio.duration);
     const handleLoadedMetadata = () => setDuration(audio.duration);
+
+    const handleSeeked = () => {
+      console.log('Seek operation completed.');
+      isSeeking.current = false;
+    };
+
     const handleEnded = () => {
       console.log('Track ended, checking for next track...');
       
@@ -174,12 +179,14 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     audio.addEventListener('durationchange', handleDurationChange);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('seeked', handleSeeked);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('durationchange', handleDurationChange);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('seeked', handleSeeked);
     };
   }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue, playSingleTrackAndClearQueue, user]);
 
@@ -237,8 +244,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       const time = value[0];
       console.log(`Seeking to: ${time}. Current play state: ${isPlaying}. Track: ${currentTrack?.title}`);
       audio.currentTime = time;
+    } else {
+      // Fallback in case audio element isn't there
+      isSeeking.current = false;
     }
-    isSeeking.current = false;
   };
 
   const handleVolumeChange = (value: number[]) => {
