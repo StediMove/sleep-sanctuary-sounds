@@ -193,16 +193,21 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   // Handle audio playback
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
+    if (!audio || !currentTrack) {
+      console.log('Audio playback effect: No audio or track.');
+      return;
+    }
 
-    console.log('Audio play state effect:', { isPlaying, currentTrack: currentTrack?.title });
+    console.log('Audio play state effect:', { isPlaying, currentTrack: currentTrack?.title, currentTime: audio.currentTime });
 
     if (isPlaying) {
+      console.log('Attempting to play...');
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(console.error);
+        playPromise.catch(error => console.error('Audio play error:', error));
       }
     } else {
+      console.log('Attempting to pause...');
       audio.pause();
     }
   }, [isPlaying, currentTrack]);
@@ -217,6 +222,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const handleSeek = (value: number[]) => {
     const audio = audioRef.current;
     if (audio) {
+      console.log(`Seeking to: ${value[0]}. Current play state: ${isPlaying}. Track: ${currentTrack?.title}`);
       audio.currentTime = value[0];
       setCurrentTime(value[0]);
     }
