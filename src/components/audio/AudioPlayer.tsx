@@ -64,6 +64,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [lastTrackId, setLastTrackId] = useState<string | null>(null);
+  const [seekValue, setSeekValue] = useState<number[] | null>(null); // For handling slider seeking
   const { user } = useAuth();
   const { subscribed } = useSubscription();
 
@@ -122,7 +123,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleTimeUpdate = () => {
+      // Only update time from audio element if user is not actively seeking
+      if (seekValue === null) {
+        setCurrentTime(audio.currentTime);
+      }
+    };
     const handleDurationChange = () => setDuration(audio.duration);
     const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => {
@@ -174,7 +180,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue, playSingleTrackAndClearQueue, user]);
+  }, [currentTrack, loopMode, hasActiveQueue, isSingleTrackMode, goToNext, getNextTrack, queue, replaceQueue, playSingleTrackAndClearQueue, user, seekValue]);
 
   // Handle audio source changes
   useEffect(() => {
@@ -219,13 +225,19 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }
   }, [volume]);
 
-  const handleSeek = (value: number[]) => {
+  const handleSeekChange = (value: number[]) => {
+    setSeekValue(value);
+  };
+
+  const handleSeekCommit = (value: number[]) => {
     const audio = audioRef.current;
     if (audio) {
-      console.log(`Seeking to: ${value[0]}. Current play state: ${isPlaying}. Track: ${currentTrack?.title}`);
-      audio.currentTime = value[0];
-      setCurrentTime(value[0]);
+      const time = value[0];
+      console.log(`Seeking to: ${time}. Current play state: ${isPlaying}. Track: ${currentTrack?.title}`);
+      audio.currentTime = time;
+      setCurrentTime(time);
     }
+    setSeekValue(null);
   };
 
   const handleVolumeChange = (value: number[]) => {
@@ -454,15 +466,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           
           <div className="flex items-center space-x-2 sm:space-x-4">
             <span className="text-white/60 text-xs sm:text-sm min-w-[35px] sm:min-w-[40px] text-center">
-              {formatTime(currentTime)}
+              {formatTime(seekValue ? seekValue[0] : currentTime)}
             </span>
             
             <div className="flex-1">
               <Slider
-                value={[currentTime]}
+                value={seekValue ?? [currentTime]}
                 max={duration || 100}
                 step={1}
-                onValueChange={handleSeek}
+                onValueChange={handleSeekChange}
+                onValueCommit={handleSeekCommit}
                 className="w-full audio-progress-slider"
               />
             </div>
