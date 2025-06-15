@@ -48,21 +48,13 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    // Create checkout session for $18/year subscription
+    // Create checkout session using your specific price ID
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: "Sleep Sanctuary Premium",
-              description: "Full access to all audio content"
-            },
-            unit_amount: 1800, // $18.00 in cents
-            recurring: { interval: "year" },
-          },
+          price: "price_1RaBm2PkI13cOdhVqo2LTwJd", // Your specific price ID
           quantity: 1,
         },
       ],
