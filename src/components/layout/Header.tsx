@@ -15,7 +15,7 @@ const Header = () => {
             <Moon className="h-6 w-6 text-white" />
           </div>
           <span className="font-serif text-xl sm:text-2xl font-normal text-white group-hover:text-white/90 transition-colors duration-300 whitespace-nowrap">
-            Sleep Sanctuary
+            Whispry
           </span>
         </Link>
         

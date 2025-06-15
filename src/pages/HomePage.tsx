@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -60,6 +61,14 @@ const HomePage = () => {
   const meditationMusic = mapTracks(getTracksByCategory('meditation-music'));
   const newReleases = mapTracks(getNewReleases());
   const trendingNow = mapTracks(getTrendingTracks());
+
+  const isTeaserMode = user && !subscribed;
+
+  const displayBedtimeStories = isTeaserMode ? bedtimeStories.slice(0, 1) : bedtimeStories;
+  const displayCalmingSounds = isTeaserMode ? calmingSounds.slice(0, 1) : calmingSounds;
+  const displayMeditationMusic = isTeaserMode ? meditationMusic.slice(0, 1) : meditationMusic;
+  const displayNewReleases = isTeaserMode ? newReleases.slice(0, 1) : newReleases;
+  const displayTrendingNow = isTeaserMode ? trendingNow.slice(0, 1) : trendingNow;
 
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from home page:', track);
@@ -136,7 +145,7 @@ const HomePage = () => {
       <section className="container mx-auto px-6 py-16 relative z-10">
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="font-serif text-5xl md:text-7xl font-normal text-white mb-6 leading-tight">
-            Sleep Sanctuary
+            Whispry
           </h1>
           <p className="text-xl text-white/80 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
             Discover peaceful bedtime stories, calming sounds, and meditation music 
@@ -190,23 +199,27 @@ const HomePage = () => {
       {/* Sample/Featured Content */}
       <section className="container mx-auto px-6 py-12 relative z-10">
         <h2 className="font-serif text-3xl font-normal text-white mb-8 text-center">
-          {user && subscribed ? 'Featured Content' : 'Sample Tracks'}
+          {user ? 'Featured Content' : 'Sample Tracks'}
         </h2>
-        {user && subscribed ? (
-          <FeaturedContent
-            bedtimeStories={bedtimeStories}
-            calmingSounds={calmingSounds}
-            meditationMusic={meditationMusic}
-            newReleases={newReleases}
-            trendingNow={trendingNow}
-          />
+        {user ? (
+          <>
+            {!subscribed && (
+              <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
+                Here's a sample of our premium content. Subscribe for full access to browse and listen to all tracks.
+              </p>
+            )}
+            <FeaturedContent
+              bedtimeStories={displayBedtimeStories}
+              calmingSounds={displayCalmingSounds}
+              meditationMusic={displayMeditationMusic}
+              newReleases={displayNewReleases}
+              trendingNow={displayTrendingNow}
+            />
+          </>
         ) : (
           <>
             <p className="text-white/70 mb-8 text-center font-light leading-relaxed max-w-2xl mx-auto">
-              {user 
-                ? "Try these sample tracks. Subscribe for $18/year to get full access to our complete library."
-                : "Try these sample tracks from each category. Sign up and subscribe to get full access to our complete library."
-              }
+              Try these sample tracks from each category. Sign up and subscribe to get full access to our complete library.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {sampleTracks.map((track, index) => (
