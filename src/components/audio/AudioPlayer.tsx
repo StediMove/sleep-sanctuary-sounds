@@ -8,6 +8,7 @@ import { useQueueContext } from '@/contexts/QueueContext';
 import QueueDrawer from './QueueDrawer';
 import { getTracksByCategory, realCategories } from '@/utils/audioContent';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 
 interface AudioPlayerProps {
@@ -64,6 +65,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const [volume, setVolume] = useState(0.7);
   const [lastTrackId, setLastTrackId] = useState<string | null>(null);
   const { user } = useAuth();
+  const { subscribed } = useSubscription();
 
   const {
     queue,
@@ -398,7 +400,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 onReplaceQueue={replaceQueue}
               />
               
-              {!user && (
+              {(!user || !subscribed) && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -409,7 +411,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                   </Button>
               )}
               
-              {user && (
+              {user && subscribed && (
                 <>
                 <Button
                   variant="ghost"
