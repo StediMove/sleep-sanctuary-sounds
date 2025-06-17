@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Drawer,
@@ -108,8 +109,8 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
           <ListMusic className="h-4 w-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-slate-900 border-white/10 text-white max-h-[80vh] flex flex-col">
-        <DrawerHeader className="border-b border-white/10 flex-shrink-0">
+      <DrawerContent className="bg-slate-900 border-white/10 text-white h-[85vh] flex flex-col">
+        <DrawerHeader className="border-b border-white/10 flex-shrink-0 pb-4">
           <div className="flex items-center justify-between">
             <DrawerTitle className="text-white flex items-center gap-2">
               <Music className="h-5 w-5" />
@@ -129,9 +130,9 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
           </div>
         </DrawerHeader>
         
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-4">
+            <div className="p-4 pb-8">
               {queue.length === 0 ? (
                 <div className="text-center text-white/60 py-8">
                   <Music className="h-12 w-12 mx-auto mb-4 opacity-50" />
