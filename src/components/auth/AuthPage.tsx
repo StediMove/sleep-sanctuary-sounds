@@ -15,6 +15,7 @@ const AuthPage = () => {
   const [resetMode, setResetMode] = useState(false);
   const [searchParams] = useSearchParams();
   const [newPasswordMode, setNewPasswordMode] = useState(false);
+  const [recoverySession, setRecoverySession] = useState<any>(null);
 
   // Check if this is a password reset redirect
   useEffect(() => {
@@ -26,29 +27,20 @@ const AuthPage = () => {
     
     if (type === 'recovery' && accessToken && refreshToken) {
       console.log('Processing password recovery...');
-      // Set the session with the tokens from the URL
-      supabase.auth.setSession({
+      // Store the recovery tokens but don't set the session yet
+      setRecoverySession({
         access_token: accessToken,
         refresh_token: refreshToken,
-      }).then(({ data, error }) => {
-        console.log('Set session result:', { data, error });
-        if (!error) {
-          setNewPasswordMode(true);
-          toast({
-            title: "Reset your password",
-            description: "Please enter your new password below."
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Invalid or expired reset link. Please request a new one.",
-            variant: "destructive"
-          });
-        }
+      });
+      setNewPasswordMode(true);
+      toast({
+        title: "Reset your password",
+        description: "Please enter your new password below."
       });
     }
   }, [searchParams, toast]);
 
+  // Only redirect if user is logged in AND not in password reset mode
   if (user && !newPasswordMode) {
     return <Navigate to="/" replace />;
   }
@@ -165,30 +157,50 @@ const AuthPage = () => {
       return;
     }
 
-    console.log('Updating password...');
+    console.log('Updating password with recovery session...');
 
-    const { error } = await supabase.auth.updateUser({
-      password: password
-    });
-    
-    if (error) {
-      console.error('Password update error:', error);
+    try {
+      // First set the session with the recovery tokens
+      if (recoverySession) {
+        await supabase.auth.setSession({
+          access_token: recoverySession.access_token,
+          refresh_token: recoverySession.refresh_token,
+        });
+      }
+
+      // Then update the password
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      });
+      
+      if (error) {
+        console.error('Password update error:', error);
+        toast({
+          title: "Error updating password",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Password updated!",
+          description: "Your password has been successfully updated. You will be redirected to the home page."
+        });
+        setNewPasswordMode(false);
+        setRecoverySession(null);
+        // Clear the URL parameters and redirect to home
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error during password update:', error);
       toast({
         title: "Error updating password",
-        description: error.message,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "Password updated!",
-        description: "Your password has been successfully updated. You will be redirected to the home page."
-      });
-      setNewPasswordMode(false);
-      // Clear the URL parameters and redirect to home
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
     }
+    
     setLoading(false);
   };
 
