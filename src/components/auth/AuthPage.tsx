@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -23,17 +22,29 @@ const AuthPage = () => {
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
     
+    console.log('URL params:', { type, accessToken: !!accessToken, refreshToken: !!refreshToken });
+    
     if (type === 'recovery' && accessToken && refreshToken) {
+      console.log('Processing password recovery...');
       // Set the session with the tokens from the URL
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
-      }).then(() => {
-        setNewPasswordMode(true);
-        toast({
-          title: "Reset your password",
-          description: "Please enter your new password below."
-        });
+      }).then(({ data, error }) => {
+        console.log('Set session result:', { data, error });
+        if (!error) {
+          setNewPasswordMode(true);
+          toast({
+            title: "Reset your password",
+            description: "Please enter your new password below."
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Invalid or expired reset link. Please request a new one.",
+            variant: "destructive"
+          });
+        }
       });
     }
   }, [searchParams, toast]);
@@ -100,8 +111,14 @@ const AuthPage = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
 
+    // Use the actual domain instead of localhost
+    const currentUrl = window.location.origin;
+    const redirectUrl = `${currentUrl}/auth`;
+
+    console.log('Sending password reset to:', email, 'with redirect:', redirectUrl);
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth?type=recovery`
+      redirectTo: redirectUrl
     });
     
     if (error) {
@@ -138,11 +155,24 @@ const AuthPage = () => {
       return;
     }
 
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+
+    console.log('Updating password...');
+
     const { error } = await supabase.auth.updateUser({
       password: password
     });
     
     if (error) {
+      console.error('Password update error:', error);
       toast({
         title: "Error updating password",
         description: error.message,
@@ -151,9 +181,13 @@ const AuthPage = () => {
     } else {
       toast({
         title: "Password updated!",
-        description: "Your password has been successfully updated."
+        description: "Your password has been successfully updated. You will be redirected to the home page."
       });
       setNewPasswordMode(false);
+      // Clear the URL parameters and redirect to home
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
     }
     setLoading(false);
   };
@@ -176,8 +210,9 @@ const AuthPage = () => {
                 <Input
                   name="password"
                   type="password"
-                  placeholder="New password"
+                  placeholder="New password (min 6 characters)"
                   required
+                  minLength={6}
                   className="bg-white/20 border-white/30 text-white placeholder:text-white/50"
                 />
                 <Input
@@ -185,6 +220,7 @@ const AuthPage = () => {
                   type="password"
                   placeholder="Confirm new password"
                   required
+                  minLength={6}
                   className="bg-white/20 border-white/30 text-white placeholder:text-white/50"
                 />
                 <Button 
