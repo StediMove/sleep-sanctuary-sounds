@@ -312,32 +312,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const handlePrevious = () => {
     console.log('Previous button clicked');
     
-    // If we have an active queue
-    if (hasActiveQueue) {
-      const prevTrack = getPreviousTrack();
-      if (prevTrack) {
-        console.log('Moving to previous track in queue');
-        goToPrevious();
-        return;
-      }
-    }
-
-    // If there's a paused queue, resume it
-    if (hasPausedQueue) {
-      console.log('Resuming paused queue');
-      resumeQueue();
+    // Always try to go to previous track using the improved logic
+    const prevTrack = getPreviousTrack();
+    if (prevTrack) {
+      console.log('Going to previous track:', prevTrack.title);
+      goToPrevious();
       return;
-    }
-
-    // If in single track mode, play another from same category
-    if (isSingleTrackMode && currentTrack?.category_id) {
-      console.log('Single track mode - playing random from same category');
-      const randomTrack = getRandomTrackFromCategory(currentTrack.category_id, currentTrack.id);
-      if (randomTrack) {
-        console.log('Playing random track from category:', randomTrack.title);
-        replaceQueue(randomTrack);
-        return;
-      }
     }
 
     console.log('No previous track available');
@@ -369,9 +349,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Navigation buttons logic - next/previous should always be available
+  // Navigation buttons logic - always allow previous if there's history or tracks
   const canGoNext = true; // Always allow next (will find track from category)
-  const canGoPrevious = hasActiveQueue || hasPausedQueue || isSingleTrackMode;
+  const canGoPrevious = getPreviousTrack() !== null;
 
   if (!currentTrack) return null;
 

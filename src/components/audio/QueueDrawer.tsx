@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Drawer,
@@ -109,8 +108,8 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
           <ListMusic className="h-4 w-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="bg-slate-900 border-white/10 text-white max-h-[80vh]">
-        <DrawerHeader className="border-b border-white/10">
+      <DrawerContent className="bg-slate-900 border-white/10 text-white max-h-[80vh] flex flex-col">
+        <DrawerHeader className="border-b border-white/10 flex-shrink-0">
           <div className="flex items-center justify-between">
             <DrawerTitle className="text-white flex items-center gap-2">
               <Music className="h-5 w-5" />
@@ -130,118 +129,122 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
           </div>
         </DrawerHeader>
         
-        <ScrollArea className="flex-1 p-4">
-          {queue.length === 0 ? (
-            <div className="text-center text-white/60 py-8">
-              <Music className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No tracks in queue</p>
-              <p className="text-sm">Add tracks to start building your playlist</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {queue.map((track, index) => {
-                const categoryColors = getCategoryColor(track.categories?.name || '');
-                const isCurrentTrack = index === currentIndex;
-                
-                return (
-                  <div
-                    key={`${track.id}-${index}`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, index)}
-                    className={`
-                      flex items-center gap-3 p-3 rounded-lg border transition-all cursor-move
-                      ${isCurrentTrack 
-                        ? 'bg-purple-500/20 border-purple-400/50' 
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      }
-                      ${draggedIndex === index ? 'opacity-50' : ''}
-                    `}
-                  >
-                    <GripVertical className="h-4 w-4 text-white/40 flex-shrink-0" />
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              {queue.length === 0 ? (
+                <div className="text-center text-white/60 py-8">
+                  <Music className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No tracks in queue</p>
+                  <p className="text-sm">Add tracks to start building your playlist</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {queue.map((track, index) => {
+                    const categoryColors = getCategoryColor(track.categories?.name || '');
+                    const isCurrentTrack = index === currentIndex;
                     
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className={`font-medium truncate ${isCurrentTrack ? 'text-purple-300' : 'text-white'}`}>
-                          {track.title}
-                        </h4>
-                        {track.categories?.name && (
-                          <Badge 
-                            variant="secondary" 
-                            className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs`}
-                          >
-                            {track.categories.name}
-                          </Badge>
-                        )}
-                      </div>
-                      {track.description && (
-                        <p className="text-white/60 text-sm truncate">
-                          {track.description}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handlePlayTrack(index)}
-                        className={`${isCurrentTrack ? 'text-purple-300' : 'text-white'} hover:bg-white/10`}
+                    return (
+                      <div
+                        key={`${track.id}-${index}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        className={`
+                          flex items-center gap-3 p-3 rounded-lg border transition-all cursor-move
+                          ${isCurrentTrack 
+                            ? 'bg-purple-500/20 border-purple-400/50' 
+                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          }
+                          ${draggedIndex === index ? 'opacity-50' : ''}
+                        `}
                       >
-                        <Play className="h-4 w-4" />
-                      </Button>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <GripVertical className="h-4 w-4 text-white/40 flex-shrink-0" />
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className={`font-medium truncate ${isCurrentTrack ? 'text-purple-300' : 'text-white'}`}>
+                              {track.title}
+                            </h4>
+                            {track.categories?.name && (
+                              <Badge 
+                                variant="secondary" 
+                                className={`${categoryColors.bg} ${categoryColors.text} ${categoryColors.border} border text-xs`}
+                              >
+                                {track.categories.name}
+                              </Badge>
+                            )}
+                          </div>
+                          {track.description && (
+                            <p className="text-white/60 text-sm truncate">
+                              {track.description}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-white hover:bg-white/10"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
+                            onClick={() => handlePlayTrack(index)}
+                            className={`${isCurrentTrack ? 'text-purple-300' : 'text-white'} hover:bg-white/10`}
                           >
-                            <MoreVertical className="h-4 w-4" />
+                            <Play className="h-4 w-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent 
-                          className="bg-slate-800 border-white/10 text-white"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                          align="end"
-                        >
-                            <DropdownMenuItem onClick={() => onAddToQueue(track)} className="hover:bg-white/10 focus:bg-white/10">
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add to Queue
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onPlayNext(track)} className="hover:bg-white/10 focus:bg-white/10">
-                                <Play className="h-4 w-4 mr-2" />
-                                Play Next
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-white/10" />
-                            <DropdownMenuItem onClick={() => onReplaceQueue(track)} className="hover:bg-white/10 focus:bg-white/10">
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                Replace Queue
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveTrack(index)}
-                        className="text-red-400 hover:bg-red-400/10"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-white hover:bg-white/10"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent 
+                              className="bg-slate-800 border-white/10 text-white"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                              align="end"
+                            >
+                                <DropdownMenuItem onClick={() => onAddToQueue(track)} className="hover:bg-white/10 focus:bg-white/10">
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add to Queue
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onPlayNext(track)} className="hover:bg-white/10 focus:bg-white/10">
+                                    <Play className="h-4 w-4 mr-2" />
+                                    Play Next
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-white/10" />
+                                <DropdownMenuItem onClick={() => onReplaceQueue(track)} className="hover:bg-white/10 focus:bg-white/10">
+                                    <RotateCcw className="h-4 w-4 mr-2" />
+                                    Replace Queue
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveTrack(index)}
+                            className="text-red-400 hover:bg-red-400/10"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </ScrollArea>
+          </ScrollArea>
+        </div>
       </DrawerContent>
     </Drawer>
   );

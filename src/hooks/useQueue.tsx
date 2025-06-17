@@ -31,6 +31,21 @@ export const useQueue = () => {
   const [pausedQueue, setPausedQueue] = useState<QueueTrack[]>([]);
   const [pausedIndex, setPausedIndex] = useState(0);
 
+  // Track history for previous button
+  const [trackHistory, setTrackHistory] = useState<QueueTrack[]>([]);
+
+  const addToTrackHistory = useCallback((track: QueueTrack) => {
+    setTrackHistory(prev => {
+      // Don't add duplicate consecutive tracks
+      if (prev.length > 0 && prev[prev.length - 1].id === track.id) {
+        return prev;
+      }
+      // Keep only last 50 tracks to prevent memory issues
+      const newHistory = [...prev, track];
+      return newHistory.slice(-50);
+    });
+  }, []);
+
   const addToQueue = useCallback((track: QueueTrack) => {
     console.log('Adding track to queue:', track);
     setQueue(prev => {
@@ -64,6 +79,12 @@ export const useQueue = () => {
   const replaceQueue = useCallback((track: QueueTrack) => {
     console.log('Replacing queue with track:', track);
     
+    // Add current track to history before switching
+    const currentTrack = isSingleTrackMode ? singleTrack : (queue.length > 0 ? queue[currentIndex] : null);
+    if (currentTrack) {
+      addToTrackHistory(currentTrack);
+    }
+    
     // If we have an active queue, pause it
     if (queue.length > 0 && !isSingleTrackMode) {
       console.log('Pausing current queue to play single track');
@@ -76,11 +97,16 @@ export const useQueue = () => {
     setIsSingleTrackMode(true);
     // Don't clear the queue here - just set single track mode
     setCurrentIndex(0);
-  }, [queue, currentIndex, isSingleTrackMode]);
+  }, [queue, currentIndex, isSingleTrackMode, singleTrack, addToTrackHistory]);
 
   const resumeQueue = useCallback(() => {
     console.log('Resuming paused queue');
     if (pausedQueue.length > 0) {
+      // Add current single track to history
+      if (isSingleTrackMode && singleTrack) {
+        addToTrackHistory(singleTrack);
+      }
+      
       setQueue([...pausedQueue]);
       setCurrentIndex(pausedIndex);
       setIsSingleTrackMode(false);
@@ -88,7 +114,7 @@ export const useQueue = () => {
       setPausedQueue([]);
       setPausedIndex(0);
     }
-  }, [pausedQueue, pausedIndex]);
+  }, [pausedQueue, pausedIndex, isSingleTrackMode, singleTrack, addToTrackHistory]);
 
   const removeFromQueue = useCallback((index: number) => {
     console.log('Removing track at index:', index);
@@ -118,6 +144,13 @@ export const useQueue = () => {
 
   const playSingleTrackAndClearQueue = useCallback((track: QueueTrack) => {
     console.log('Clearing queue and playing single track:', track.title);
+    
+    // Add current track to history before switching
+    const currentTrack = isSingleTrackMode ? singleTrack : (queue.length > 0 ? queue[currentIndex] : null);
+    if (currentTrack) {
+      addToTrackHistory(currentTrack);
+    }
+    
     setQueue([]);
     setPausedQueue([]);
     setPausedIndex(0);
@@ -127,7 +160,7 @@ export const useQueue = () => {
     setSingleTrack(track);
     setIsSingleTrackMode(true);
     setCurrentIndex(0);
-  }, []);
+  }, [queue, currentIndex, isSingleTrackMode, singleTrack, addToTrackHistory]);
 
   const moveTrack = useCallback((fromIndex: number, toIndex: number) => {
     console.log('Moving track from', fromIndex, 'to', toIndex);
@@ -170,6 +203,11 @@ export const useQueue = () => {
   }, [queue, currentIndex, loopMode, isSingleTrackMode]);
 
   const getPreviousTrack = useCallback(() => {
+    // Always check history first for previous track
+    if (trackHistory.length > 0) {
+      return trackHistory[trackHistory.length - 1];
+    }
+    
     // If in single track mode, check for paused queue
     if (isSingleTrackMode && pausedQueue.length > 0) {
       return pausedQueue[pausedIndex];
@@ -186,10 +224,16 @@ export const useQueue = () => {
     }
     
     return null;
-  }, [queue, currentIndex, loopMode, isSingleTrackMode, pausedQueue, pausedIndex]);
+  }, [queue, currentIndex, loopMode, isSingleTrackMode, pausedQueue, pausedIndex, trackHistory]);
 
   const goToNext = useCallback(() => {
     console.log('Going to next track');
+    
+    // Add current track to history when moving to next
+    const currentTrack = isSingleTrackMode ? singleTrack : (queue.length > 0 ? queue[currentIndex] : null);
+    if (currentTrack) {
+      addToTrackHistory(currentTrack);
+    }
     
     if (isSingleTrackMode) {
       // If we have a paused queue, resume it
@@ -212,10 +256,37 @@ export const useQueue = () => {
       console.log('Looping back to start');
       setCurrentIndex(0);
     }
-  }, [currentIndex, queue.length, loopMode, isSingleTrackMode, pausedQueue, resumeQueue]);
+  }, [currentIndex, queue.length, loopMode, isSingleTrackMode, pausedQueue, resumeQueue, singleTrack, addToTrackHistory]);
 
   const goToPrevious = useCallback(() => {
     console.log('Going to previous track');
+    
+    // Check if we have a track in history
+    if (trackHistory.length > 0) {
+      const previousTrack = trackHistory[trackHistory.length - 1];
+      console.log('Playing previous track from history:', previousTrack.title);
+      
+      // Remove the track from history
+      setTrackHistory(prev => prev.slice(0, -1));
+      
+      // Add current track to history before switching
+      const currentTrack = isSingleTrackMode ? singleTrack : (queue.length > 0 ? queue[currentIndex] : null);
+      if (currentTrack && currentTrack.id !== previousTrack.id) {
+        addToTrackHistory(currentTrack);
+      }
+      
+      // Play the previous track as single track
+      setSingleTrack(previousTrack);
+      setIsSingleTrackMode(true);
+      
+      // If we had an active queue, pause it
+      if (queue.length > 0 && !isSingleTrackMode) {
+        setPausedQueue([...queue]);
+        setPausedIndex(currentIndex);
+      }
+      
+      return;
+    }
     
     if (isSingleTrackMode) {
       // If we have a paused queue, resume it
@@ -230,22 +301,42 @@ export const useQueue = () => {
     if (currentIndex > 0) {
       const prevIndex = currentIndex - 1;
       console.log('Moving to index:', prevIndex);
+      
+      // Add current track to history
+      const currentTrack = queue[currentIndex];
+      if (currentTrack) {
+        addToTrackHistory(currentTrack);
+      }
+      
       setCurrentIndex(prevIndex);
     } else if (loopMode === 'all') {
       const lastIndex = queue.length - 1;
       console.log('Looping to end, index:', lastIndex);
+      
+      // Add current track to history
+      const currentTrack = queue[currentIndex];
+      if (currentTrack) {
+        addToTrackHistory(currentTrack);
+      }
+      
       setCurrentIndex(lastIndex);
     }
-  }, [currentIndex, queue.length, loopMode, isSingleTrackMode, pausedQueue, resumeQueue]);
+  }, [currentIndex, queue, loopMode, isSingleTrackMode, pausedQueue, resumeQueue, trackHistory, singleTrack, addToTrackHistory]);
 
   const playTrackAt = useCallback((index: number) => {
     console.log('Playing track at index:', index);
     if (index >= 0 && index < queue.length) {
+      // Add current track to history before switching
+      const currentTrack = isSingleTrackMode ? singleTrack : (queue.length > 0 ? queue[currentIndex] : null);
+      if (currentTrack) {
+        addToTrackHistory(currentTrack);
+      }
+      
       setCurrentIndex(index);
       setIsSingleTrackMode(false);
       setSingleTrack(null);
     }
-  }, [queue.length]);
+  }, [queue.length, isSingleTrackMode, singleTrack, currentIndex, addToTrackHistory]);
 
   const shuffleQueue = useCallback(() => {
     if (isSingleTrackMode) return;
@@ -285,7 +376,8 @@ export const useQueue = () => {
     currentIndex,
     currentTrack: currentTrack?.title,
     hasActiveQueue,
-    hasPausedQueue
+    hasPausedQueue,
+    trackHistoryLength: trackHistory.length
   });
 
   return {
