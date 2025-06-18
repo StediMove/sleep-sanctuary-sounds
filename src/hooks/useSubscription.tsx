@@ -72,8 +72,8 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
 
       if (error) throw error;
 
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
+      // Use direct navigation instead of opening new tab for better mobile compatibility
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
@@ -99,8 +99,8 @@ export const SubscriptionProvider = ({ children }: { children: React.ReactNode }
 
       if (error) throw error;
 
-      // Open customer portal in a new tab
-      window.open(data.url, '_blank');
+      // Use direct navigation instead of opening new tab for better mobile compatibility
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast({
