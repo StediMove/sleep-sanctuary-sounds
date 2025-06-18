@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import TrackCard from '@/components/content/TrackCard';
+import { usePlaybackRestrictions } from '@/hooks/usePlaybackRestrictions';
+import RestrictedTrackCard from '@/components/content/RestrictedTrackCard';
 import FilterTags from '@/components/content/FilterTags';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -18,6 +18,7 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canPlayTrack, showUpgradePrompt } = usePlaybackRestrictions();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
@@ -41,6 +42,12 @@ const CategoryPage = () => {
 
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from category page:', track);
+    
+    // Check if user can play this track
+    if (!canPlayTrack(track.id)) {
+      showUpgradePrompt(`"${track.title}" is premium content`);
+      return;
+    }
     
     // Check if this track is already playing
     if (currentTrack?.id === track.id && isGlobalPlaying) {
@@ -118,7 +125,7 @@ const CategoryPage = () => {
         {/* Tracks */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredTracks.map((track) => (
-            <TrackCard
+            <RestrictedTrackCard
               key={track.id}
               track={track}
               isPlaying={currentTrack?.id === track.id && isGlobalPlaying}

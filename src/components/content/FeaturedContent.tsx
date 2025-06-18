@@ -1,4 +1,3 @@
-
 import {
   Carousel,
   CarouselContent,
@@ -7,8 +6,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import TrackCard from "@/components/content/TrackCard"
+import RestrictedTrackCard from "@/components/content/RestrictedTrackCard"
 import { useQueueContext } from "@/contexts/QueueContext"
+import { usePlaybackRestrictions } from "@/hooks/usePlaybackRestrictions"
 
 interface Track {
   id: string;
@@ -47,7 +47,14 @@ const FeaturedContent = ({
     replaceQueue,
   } = useQueueContext()
 
+  const { canPlayTrack, showUpgradePrompt } = usePlaybackRestrictions()
+
   const handlePlayTrack = (track: Track) => {
+    if (!canPlayTrack(track.id)) {
+      showUpgradePrompt(`"${track.title}" is premium content`)
+      return
+    }
+
     if (currentTrack?.id === track.id && isGlobalPlaying) {
       return
     }
@@ -71,7 +78,7 @@ const FeaturedContent = ({
           {tracks.map((track) => (
             <CarouselItem key={track.id} className="pl-2 md:pl-4 basis-5/6 sm:basis-1/2 lg:basis-1/3">
               <div className="p-1">
-                <TrackCard
+                <RestrictedTrackCard
                   track={track}
                   isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
                   onPlay={() => handlePlayTrack(track)}
@@ -123,4 +130,3 @@ const FeaturedContent = ({
 }
 
 export default FeaturedContent
-

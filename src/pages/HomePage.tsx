@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePlaybackRestrictions } from '@/hooks/usePlaybackRestrictions';
 import CategoryCard from '@/components/content/CategoryCard';
-import TrackCard from '@/components/content/TrackCard';
+import RestrictedTrackCard from '@/components/content/RestrictedTrackCard';
 import SubscriptionButton from '@/components/subscription/SubscriptionButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +28,7 @@ import {
 const HomePage = () => {
   const { user } = useAuth();
   const { subscribed, checkSubscription, loading: subscriptionLoading } = useSubscription();
+  const { canPlayTrack, showUpgradePrompt } = usePlaybackRestrictions();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -73,13 +74,9 @@ const HomePage = () => {
   const handlePlayTrack = (track: any) => {
     console.log('Playing track from home page:', track);
     
-    // Check if user has access to premium content
-    if (track.is_premium && !subscribed && user) {
-      toast({
-        title: "Premium content",
-        description: "Subscribe to access all premium content.",
-        variant: "destructive"
-      });
+    // Check if user can play this track
+    if (!canPlayTrack(track.id)) {
+      showUpgradePrompt(`"${track.title}" is premium content`);
       return;
     }
     
@@ -228,7 +225,7 @@ const HomePage = () => {
                   className="animate-fade-in"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
-                  <TrackCard
+                  <RestrictedTrackCard
                     track={track}
                     isPlaying={currentTrack?.id === track.id && isGlobalPlaying}
                     onPlay={() => handlePlayTrack(track)}

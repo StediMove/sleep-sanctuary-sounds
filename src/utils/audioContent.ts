@@ -1,4 +1,3 @@
-
 // Real audio content based on the files uploaded to GitHub
 export const realAudioContent = [
   // Bedtime Stories
@@ -10,7 +9,7 @@ export const realAudioContent = [
     file_path: '/audio/bedtime-stories/Benny the Sleepy Bear (short)-q23323b.mp3',
     thumbnail_url: '/audio/thumbnails/Benny the Sleepy Bear (short)-a2382832.png',
     duration: 600, // 10:00 minutes
-    is_premium: true,
+    is_premium: false, // Sample track
     tags: ['bedtime', 'story', 'bear', 'dreams']
   },
   {
@@ -67,7 +66,7 @@ export const realAudioContent = [
     file_path: '/audio/calming-sounds/sounds-of-nature-rain-in-the-forest-262403.mp3',
     thumbnail_url: undefined,
     duration: 1200, // 20:00 minutes
-    is_premium: true,
+    is_premium: false, // Sample track
     tags: ['nature', 'rain', 'forest', 'weather']
   },
   {
@@ -201,7 +200,7 @@ export const realAudioContent = [
     file_path: '/audio/meditation-music/Meditation music crystal-743747a.mp3',
     thumbnail_url: undefined,
     duration: 1200, // 20:00 minutes
-    is_premium: true,
+    is_premium: false, // Sample track
     tags: ['meditation', 'crystal', 'harmony', 'relaxation']
   },
   {
@@ -300,6 +299,7 @@ export const getTracksByCategory = (categoryId: string) => {
 };
 
 export const getSampleTracks = () => {
+  // Return the 3 designated sample tracks (one from each category)
   return [
     realAudioContent.find(track => track.id === 'benny-sleepy-bear'), // Sample bedtime story
     realAudioContent.find(track => track.id === 'rain-in-forest'), // Sample calming sound

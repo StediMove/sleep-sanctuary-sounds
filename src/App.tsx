@@ -1,4 +1,3 @@
-
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -7,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueueProvider } from '@/contexts/QueueContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import { SubscriptionProvider } from '@/hooks/useSubscription';
+import { PlaybackRestrictionsProvider } from '@/hooks/usePlaybackRestrictions';
 import Index from './pages/Index';
 import AuthPage from './components/auth/AuthPage';
 import HomePage from './pages/HomePage';
@@ -14,7 +14,7 @@ import CategoryPage from './pages/CategoryPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFound from './pages/NotFound';
 import Header from './components/layout/Header';
-import AudioPlayer from './components/audio/AudioPlayer';
+import RestrictedAudioPlayer from './components/audio/RestrictedAudioPlayer';
 import { useQueueContext } from '@/contexts/QueueContext';
 
 const queryClient = new QueryClient();
@@ -34,9 +34,9 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
         
-        {/* Global Audio Player - always visible when there's a track */}
+        {/* Global Audio Player with Restrictions - always visible when there's a track */}
         {currentTrack && (
-          <AudioPlayer
+          <RestrictedAudioPlayer
             currentTrack={currentTrack}
             isPlaying={isGlobalPlaying}
             onPlayPause={() => setIsGlobalPlaying(!isGlobalPlaying)}
@@ -51,13 +51,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SubscriptionProvider>
-        <QueueProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppContent />
-          </TooltipProvider>
-        </QueueProvider>
+        <PlaybackRestrictionsProvider>
+          <QueueProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppContent />
+            </TooltipProvider>
+          </QueueProvider>
+        </PlaybackRestrictionsProvider>
       </SubscriptionProvider>
     </AuthProvider>
   </QueryClientProvider>
